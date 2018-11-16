@@ -1,0 +1,36 @@
+
+Build & Run
+===
+
+With mvn:
+
+    1. mvn compile exec:java
+
+With IntelliJ:
+
+    1. ctrl + f9
+    2. alt + shift + f10
+    3. run Application
+
+Access
+===
+
+    1. open a browser
+    2. navigate to `localhost:4567`
+
+
+Special Boards
+===
+
+To access staged boards you must:
+    1. comment out line 43 in BoardModel class
+    2. uncomment lines 44, 45, OR 46
+
+line 44:
+    populateLongJumpTestBoard() -> tests multiple jump enforcement and no piece game win
+
+line 45:
+    populateNoMoveBoard() -> tests no move condition win
+
+line 46:
+    populateJumpTestBoard() -> tests king-me functionality and turn end on king; simple jump enforcement
