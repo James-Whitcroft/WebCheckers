@@ -1,0 +1,242 @@
+body {
+    background-image: url("/img/bunny_1.jpg");
+    /*background: #CAECFF;*/
+    background-size: cover;
+
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+}
+
+a {
+    color: #2677FF;
+}
+a:hover {
+    color: #333;
+}
+a[disabled] {
+    color: gray;
+    cursor: default;
+}
+
+input[type="text"],
+input[type="password"] {
+    background: white;
+    border: 1px solid #BFE6FF;
+    padding: 2px;
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    color: #1057FF;
+}
+
+input[type="submit"] {
+    background: #1057FF;
+    border: 1px solid #073BFF;
+    padding: 1px 3px;
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    color: white;
+}
+
+div.page {
+    background: white;
+    border: 1px solid #6ECCFF;
+    width: 710px;
+    margin: 30px auto;
+
+}
+
+div.page h1 {
+    background: #6ECCFF;
+    margin: 0;
+    padding: 10px 14px;
+    color: white;
+    letter-spacing: 1px;
+    text-shadow: 0 0 3px #2477FF;
+    font-weight: normal;
+}
+
+div.page div.navigation {
+    background: #DEE9FF;
+    padding: 4px 10px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #eee;
+    color: #888;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+div.page div.navigation a {
+    color: #444;
+    font-weight: bold;
+}
+
+div.page h2 {
+    margin: 0 0 15px 0;
+    color: #1057FF;
+    text-shadow: 0 1px 2px #ccc;
+}
+
+div.page div.body {
+    padding: 10px;
+}
+
+div.page div.footer {
+    background: #eee;
+    color: #888;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+div.page ul.players {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+div.page ul.players li {
+    margin: 10px 0;
+    padding: 5px;
+    background: #F0FAFF;
+    border: 1px solid #DBF3FF;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+div.error {
+    margin: 10px 0;
+    background: #FAE4E4;
+    border: 1px solid #DD6F6F;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    padding: 4px;
+    font-size: 13px;
+}
+
+div.info {
+    margin: 10px 0;
+    background: #FAFFE4;
+    border: 1px solid green;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    padding: 4px;
+    font-size: 13px;
+}
+
+
+.row {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.column {
+    display: flex;
+    flex-flow: column nowrap;
+    padding: 1rem 0;
+}
+
+.title {
+    font-weight: bold;
+    font-size: 2rem;
+    padding: 1rem;
+}
+
+.centered {
+    justify-content: center;
+    text-align: center;
+    margin: 0 auto;
+    align-items: center;
+}
+
+.navigation {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.navigation a, .fake_link {
+    border: 1px solid black;
+    border-radius: 5px;
+    text-decoration: none;
+    padding: .25rem;
+    font-size: 1rem;
+    margin: 0 .5rem;
+    color: black;
+}
+
+.navigation a:hover {
+    background-color: #aabee4;
+}
+
+.large_title {
+    font-size: 2rem;
+    padding-bottom: 1rem;
+}
+
+.pretty_input {
+    border-radius: 5px;
+    padding: .25rem;
+}
+
+.lobby {
+    padding: .5rem;
+}
+
+.small_title {
+    font-size: 1.2rem;
+    border-bottom: 2px solid black;
+}
+
+.half_row {
+    flex-basis: 50%;
+}
+
+.one_third_row {
+    flex-basis: 33%;
+}
+
+.lobby_entry {
+    padding: .25rem;
+    border: 1px solid black;
+    border-radius: 5px;
+    text-align: center;
+    margin: .25rem 0;
+    background-color: white;
+    width: 100%;
+}
+
+.lobby_entry:hover, .selector div:hover {
+    cursor: pointer;
+    background-color: #aabee4;
+    /* background-color: #d0d1d2;*/
+}
+
+.selector {
+    display: none;
+    position: absolute;
+    list-style-type: none;
+    flex-flow: column nowrap;
+    background: #dee9ff;
+    padding: 0;
+    top: 100%;
+    left: 0;
+    border: 1px solid black;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.selector div {
+    padding: .5rem;
+}
+
+.back_selector:hover {
+    position: relative;
+    cursor: pointer;
+}
+
+.back_selector:hover .selector {
+    display: flex;
+}
