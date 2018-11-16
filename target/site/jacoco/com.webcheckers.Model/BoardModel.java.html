@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BoardModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.Model</a> &gt; <span class="el_source">BoardModel.java</span></div><h1>BoardModel.java</h1><pre class="source lang-java linenums">package com.webcheckers.Model;
+
+import java.util.Deque;
+import java.util.LinkedList;
+
+/**
+ * The backend representation of the game board
+ */
+public class BoardModel {
+
+    //region Constants
+
+    private static final int BOARD_SIZE = 8;
+
+    //endregion
+
+    //region Attributes
+
+
+    private Player whitePlayer;         /** The player for the white team */
+    private Player redPlayer;           /** The player for the red team */
+
+    private Space[][] board;            /** The board representation*/
+    private Space[][] pendingBoard;     /** The temporary board representation for unsubmitted moves*/
+    private Piece.color active;         /** The color of the active player*/
+    private Player activePlayer;        /** The player whose turn it is*/
+
+    private Deque&lt;Move&gt; pendingMoves;   /** The Deque of moves that have yet to be submitted*/
+<span class="fc" id="L29">    private boolean isJumping = false;  /** Bool to track if the pending move is jumping */</span>
+<span class="fc" id="L30">    private boolean isMoving = false;   /** Bool to track if the pending move is moving */</span>
+
+    //endregion
+
+    //region Constructors
+
+<span class="fc" id="L36">    public BoardModel(Player whitePlayer, Player redPlayer) {</span>
+<span class="fc" id="L37">        this.whitePlayer = whitePlayer;</span>
+<span class="fc" id="L38">        this.redPlayer = redPlayer;</span>
+<span class="fc" id="L39">        this.active = Piece.color.RED;</span>
+<span class="fc" id="L40">        this.activePlayer = redPlayer;</span>
+<span class="fc" id="L41">        pendingMoves = null;</span>
+<span class="fc" id="L42">        InitializeSpaces();</span>
+<span class="fc" id="L43">        PopulateBoard();</span>
+<span class="fc" id="L44">    }</span>
+
+    //endregion
+
+    //region Private Methods
+
+    /**
+     * Initializes the board with correct number and color of spaces
+     */
+    private void InitializeSpaces() {
+<span class="fc" id="L54">        board = new Space[BOARD_SIZE][BOARD_SIZE];</span>
+
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (int row = 0; row &lt; BOARD_SIZE; row++) {</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            for (int col = 0; col &lt; BOARD_SIZE; col++) {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">                if(row % 2 == 0) { //this row starts on a light space</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">                    if(col % 2 == 0) //this column is a light space</span>
+<span class="fc" id="L60">                        board[row][col] = new Space(col, true);</span>
+                    else // this column is a dark space
+<span class="fc" id="L62">                        board[row][col] = new Space(col, false);</span>
+                }
+                else { //this row starts on a dark space
+<span class="fc bfc" id="L65" title="All 2 branches covered.">                    if(col % 2 == 1) //this column is a light space</span>
+<span class="fc" id="L66">                        board[row][col] = new Space(col, true);</span>
+                    else // this column is a dark space
+<span class="fc" id="L68">                        board[row][col] = new Space(col, false);</span>
+                }
+            }
+        }
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Populates the board with starting pieces
+     * Must call InitializeSpaces() prior to calling PopulateBoard()
+     */
+    private void PopulateBoard() {
+        // assert (board != null); // Board must be initialized first with InitializeSpaces
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (int row = 0; row &lt; BOARD_SIZE; row++) {</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">            for (int col = 0; col &lt; BOARD_SIZE; col++) {</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">                if(row &lt; 3) { // these rows need to have red pieces on black spaces</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">                    if (board[row][col].isValid()) {</span>
+<span class="fc" id="L84">                        board[row][col].placePiece(new Piece(Piece.color.RED));</span>
+                    }
+                }
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                else if (row &gt; 4) { // these rows need to have white pieces on black spaces</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">                    if (board[row][col].isValid()) {</span>
+<span class="fc" id="L89">                        board[row][col].placePiece(new Piece(Piece.color.WHITE));</span>
+                    }
+                }
+            }
+        }
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Creates a new pending board with the pending moves
+     */
+    private void updatePendingBoard() {
+<span class="fc" id="L100">        pendingBoard = new Space[BOARD_SIZE][BOARD_SIZE];</span>
+        // Initialize new pending board
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        for (int r = 0; r &lt; BOARD_SIZE; r++) {</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">            for (int c = 0; c &lt; BOARD_SIZE; c++) {</span>
+<span class="fc" id="L104">                pendingBoard[r][c] = new Space(board[r][c]);</span>
+            }
+        }
+<span class="fc bfc" id="L107" title="All 4 branches covered.">        if (pendingMoves != null &amp;&amp; !pendingMoves.isEmpty()) {</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            for (Move move : pendingMoves) {</span>
+<span class="fc" id="L109">                makeMove(move, true);</span>
+<span class="fc" id="L110">            }</span>
+        }
+<span class="fc" id="L112">    }</span>
+
+    //endregion
+
+    //region Public Methods
+
+
+    /**
+     * @return the 2D representation of the board spaces
+     */
+    public Space[][] getBoard() {
+<span class="fc" id="L123">        return board;</span>
+    }
+
+    /**
+     * @param position the position of the space to be returned
+     * @return the space at the given position
+     */
+    public Space getSpace(Position position) {
+<span class="fc" id="L131">        return getRow(position.getRow())[position.getCell()];</span>
+    }
+
+    public Space getSpacePendingMoves(Position position) {
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        if (pendingBoard != null) {</span>
+<span class="fc" id="L136">            return pendingBoard[position.getRow()][position.getCell()];</span>
+        }
+<span class="nc" id="L138">        return getSpace(position);</span>
+    }
+
+    /**
+     * @param index index of the row to be retrieved
+     * @return 1D array of spaces in a row at given index
+     */
+    public Space[] getRow(int index) {
+<span class="fc bfc" id="L146" title="All 4 branches covered.">        if (index &lt; 0 || index &gt; 7) {</span>
+<span class="fc" id="L147">            throw new IllegalArgumentException(&quot;Index must be between 0 and 7&quot;);</span>
+        }
+<span class="fc" id="L149">        return board[index];</span>
+    }
+
+
+    /**
+     * @param index index of the row to be retrieved
+     * @return 1D array of spaces in a row at a given index reversed
+     */
+    public Space[] getRowReversed(int index) {
+<span class="fc" id="L158">        Space[] row = getRow(index);</span>
+<span class="fc" id="L159">        Space[] reverseRow = new Space[BOARD_SIZE];</span>
+<span class="fc" id="L160">        int j = BOARD_SIZE;</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">        for (int i = 0; i &lt; BOARD_SIZE; i++) {</span>
+<span class="fc" id="L162">            j--;</span>
+<span class="fc" id="L163">            reverseRow[i] = row[j];</span>
+        }
+<span class="fc" id="L165">        return reverseRow;</span>
+    }
+
+
+
+    /**
+     * @return the red player of the game
+     */
+    public Player getRedPlayer() {
+<span class="fc" id="L174">        return redPlayer;</span>
+    }
+
+    /**
+     * @return the white player of the game
+     */
+    public Player getWhitePlayer() {
+<span class="fc" id="L181">        return whitePlayer;</span>
+    }
+
+    /**
+     * @return the color of the player whose turn it is
+     */
+    public Piece.color getActive() {
+<span class="fc" id="L188">        return this.active;</span>
+    }
+
+    /**
+     * @return the player whose turn it is
+     */
+    public Player getActivePlayer() {
+<span class="fc" id="L195">        return activePlayer;</span>
+    }
+
+    /**
+     * @return true if the pending move is a jump
+     */
+    public boolean isJumping() {
+<span class="fc" id="L202">        return isJumping;</span>
+    }
+
+    /**
+     * @return True if a piece is moving
+     */
+    public boolean isMoving() {
+<span class="fc" id="L209">        return isMoving;</span>
+    }
+
+    /**
+     * Changed the active color and the active player
+     */
+    public void changeTurns() {
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">        active = active == Piece.color.RED ? Piece.color.WHITE : Piece.color.RED;</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">        activePlayer = activePlayer == redPlayer ? whitePlayer : redPlayer;</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Makes a move on a board
+     * @param move the move to be represented on the board
+     * @param isPending True if it is a pending move, false if it is a submitted move
+     */
+    private void makeMove(Move move, boolean isPending) {
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        Space[][] boardToChange = isPending ? pendingBoard : board;</span>
+<span class="fc" id="L227">        Position start = move.getStart();</span>
+<span class="fc" id="L228">        Position end = move.getEnd();</span>
+<span class="fc" id="L229">        int rowDiff = Math.abs(start.getRow() - end.getRow());</span>
+<span class="fc" id="L230">        Piece mover = boardToChange[move.getStart().getRow()][move.getStart().getCell()].getPiece();</span>
+<span class="fc" id="L231">        boardToChange[move.getStart().getRow()][move.getStart().getCell()].removePiece();</span>
+<span class="fc" id="L232">        boardToChange[move.getEnd().getRow()][move.getEnd().getCell()].placePiece(mover);</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">        if (rowDiff == 2) { // If jump</span>
+<span class="fc" id="L234">            isJumping = true;</span>
+<span class="fc" id="L235">            Position jumpedPos = new Position( (start.getRow() + end.getRow()) / 2, (start.getCell() + end.getCell()) / 2);</span>
+<span class="fc" id="L236">            boardToChange[jumpedPos.getRow()][jumpedPos.getCell()].removePiece();</span>
+        }
+<span class="fc" id="L238">        isMoving = true;</span>
+<span class="fc" id="L239">    }</span>
+
+    /**
+     * Finalizes pending moves
+     */
+    public void makeMoves() {
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        if (pendingMoves != null) {</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">            for (Move move : pendingMoves) {</span>
+<span class="fc" id="L247">                makeMove(move, false);</span>
+<span class="fc" id="L248">                Piece piece = board[move.getEnd().getRow()][move.getEnd().getCell()].getPiece();</span>
+<span class="fc" id="L249">                piece.checkIfKingMe(piece, move);</span>
+<span class="fc" id="L250">            }</span>
+<span class="fc" id="L251">            resetPendingMoves();</span>
+        }
+<span class="fc" id="L253">    }</span>
+
+    /**
+     * Undoes the most recent pending move
+     * @return true if successful
+     */
+    public boolean backUpMove() {
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        if (pendingMoves != null) {</span>
+<span class="fc" id="L261">            pendingMoves.removeLast();</span>
+<span class="fc" id="L262">            updatePendingBoard();</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">            if (pendingMoves.isEmpty()) {</span>
+<span class="fc" id="L264">                isJumping = false;</span>
+<span class="fc" id="L265">                isMoving = false;</span>
+            }
+<span class="fc" id="L267">            return true;</span>
+        }
+<span class="fc" id="L269">        return false;</span>
+    }
+
+    /**
+     * Determines if there is a winner by checking if there is any remaining pieces for the opponent
+     * @return the winning player, or null if there is no winner
+     */
+    public Player getWinner() {
+<span class="fc" id="L277">        boolean redWins = true;</span>
+<span class="fc" id="L278">        boolean whiteWins = true;</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">        for (int r = 0; r &lt; 8; r++) {</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">            for (int c = 0; c &lt; 8; c++) {</span>
+<span class="fc" id="L281">                Piece piece = getSpace(new Position(r, c)).getPiece();</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">                if (piece != null) {</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">                    if (piece.getColor() == Piece.color.RED) {</span>
+<span class="fc" id="L284">                        whiteWins = false;</span>
+                    }
+<span class="pc bpc" id="L286" title="1 of 2 branches missed.">                    else if (piece.getColor() == Piece.color.WHITE) {</span>
+<span class="fc" id="L287">                        redWins = false;</span>
+                    }
+                }
+            }
+        }
+<span class="fc bfc" id="L292" title="All 2 branches covered.">        if (whiteWins) {</span>
+<span class="fc" id="L293">            return whitePlayer;</span>
+<span class="fc bfc" id="L294" title="All 2 branches covered.">        } else if (redWins) {</span>
+<span class="fc" id="L295">            return redPlayer;</span>
+        }
+<span class="fc" id="L297">        return null;</span>
+    }
+
+    /**
+     * Adds a pending move to the deque of pending moves
+     * @param move the move to add
+     */
+    public void addPendingMove(Move move) {
+<span class="pc bpc" id="L305" title="1 of 2 branches missed.">        if (pendingMoves == null) {</span>
+<span class="fc" id="L306">            pendingMoves = new LinkedList&lt;&gt;();</span>
+        }
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">        if(move != null) {</span>
+<span class="fc" id="L309">            pendingMoves.add(move);</span>
+        }
+<span class="fc" id="L311">        updatePendingBoard();</span>
+<span class="fc" id="L312">    }</span>
+
+    /**
+     * resets all pending moves and resets board to start of turn state
+     */
+    public void resetPendingMoves() {
+<span class="fc" id="L318">        pendingMoves = null;</span>
+<span class="fc" id="L319">        isJumping = false;</span>
+<span class="fc" id="L320">        isMoving = false;</span>
+<span class="fc" id="L321">        updatePendingBoard();</span>
+<span class="fc" id="L322">    }</span>
+
+    /**
+     * @return a deque of pending moves
+     */
+    public Deque&lt;Move&gt; getPendingMoves() {
+<span class="nc" id="L328">        return pendingMoves;</span>
+    }
+
+    //endregion
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

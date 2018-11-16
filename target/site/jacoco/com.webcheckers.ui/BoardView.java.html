@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BoardView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.ui</a> &gt; <span class="el_source">BoardView.java</span></div><h1>BoardView.java</h1><pre class="source lang-java linenums">package com.webcheckers.ui;
+
+import com.webcheckers.Model.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class BoardView {
+
+    //region Attributes
+
+    private ArrayList&lt;Row&gt; rows;
+    private Player redPlayer;
+    private Player whitePlayer;
+    private Piece.color activeColor;
+
+    //endregion
+
+    //region Constructor
+
+    /**
+     * Creates an iterable of iterables to be easily read by the freemarker
+     * template from a 2D array of spaces in BoardModel
+     * @param model the model to be represented by the BoardView
+     */
+<span class="fc" id="L26">    public BoardView(Player player, BoardModel model) {</span>
+<span class="fc" id="L27">        rows = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L29">        redPlayer = model.getRedPlayer();</span>
+<span class="fc" id="L30">        whitePlayer = model.getWhitePlayer();</span>
+<span class="fc" id="L31">        activeColor = model.getActive();</span>
+
+<span class="fc" id="L33">        Piece.color playerColor = getPlayerColor(player, model);</span>
+
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (playerColor == Piece.color.WHITE) {</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            for (int r = 0; r &lt; 8; r++) {</span>
+                // Converts the row from model into an iterable Row class
+<span class="fc" id="L38">                rows.add(new Row(r, model.getRow(r)));</span>
+            }
+        }
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (playerColor == Piece.color.RED) {</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            for (int r = 7; r &gt;= 0; r--) {</span>
+                // Converts the row from model into an iterable Row class
+<span class="fc" id="L44">                rows.add(new Row(r, model.getRowReversed(r)));</span>
+            }
+        }
+
+<span class="fc" id="L48">    }</span>
+
+    //endregion
+
+    //region Private Methods
+
+    /**
+     * return the given player's color
+     * @param player the player for whom youre querying
+     * @param model the model the player uses
+     * @return an enum RED or WHITE
+     */
+    private Piece.color getPlayerColor(Player player, BoardModel model) {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (model.getWhitePlayer() == player) {</span>
+<span class="fc" id="L62">            return Piece.color.WHITE;</span>
+        }
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (model.getRedPlayer() == player) {</span>
+<span class="fc" id="L65">            return Piece.color.RED;</span>
+        }
+<span class="nc" id="L67">        return null;</span>
+    }
+
+    //endregion
+
+    //region Public Methods
+
+    /**
+     * @return the iterable list of rows containing an iterable list of spaces
+     */
+    public synchronized Iterator&lt;Row&gt; iterator() {
+<span class="fc" id="L78">        return rows.iterator();</span>
+    }
+
+    public Player getWhitePlayer() {
+<span class="fc" id="L82">        return whitePlayer;</span>
+    }
+
+    public Player getRedPlayer() {
+<span class="fc" id="L86">        return redPlayer;</span>
+    }
+
+    /**
+     * get the active player's color
+     * @return enum WHITE or RED
+     */
+    public Piece.color getActiveColor() {
+<span class="fc" id="L94">        return activeColor;</span>
+    }
+
+    /**
+     *  get the active player
+     * @return a Player object representing the active player
+     */
+    public Player getActivePlayer() {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        return activeColor == Piece.color.RED ? redPlayer : whitePlayer;</span>
+    }
+
+    //endregion
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

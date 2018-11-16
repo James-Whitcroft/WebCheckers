@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Application.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers</a> &gt; <span class="el_source">Application.java</span></div><h1>Application.java</h1><pre class="source lang-java linenums">package com.webcheckers;
+
+import java.io.InputStream;
+import java.util.Objects;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import com.google.gson.Gson;
+import com.webcheckers.Appl.GameList;
+import com.webcheckers.Appl.PlayerLobby;
+import com.webcheckers.Model.BoardModel;
+import com.webcheckers.ui.WebServer;
+
+import spark.TemplateEngine;
+import spark.template.freemarker.FreeMarkerEngine;
+
+
+/**
+ * The entry point for the WebCheckers web application.
+ *
+ * @author &lt;a href='mailto:bdbvse@rit.edu'&gt;Bryan Basham&lt;/a&gt;
+ */
+public final class Application {
+<span class="nc" id="L24">  private static final Logger LOG = Logger.getLogger(Application.class.getName());</span>
+
+  //
+  // Application Launch method
+  //
+
+  /**
+   * Entry point for the WebCheckers web application.
+   *
+   * &lt;p&gt;
+   * It wires the application components together.  This is an example
+   * of &lt;a href='https://en.wikipedia.org/wiki/Dependency_injection'&gt;Dependency Injection&lt;/a&gt;
+   * &lt;/p&gt;
+   *
+   * @param args
+   *    Command line arguments; none expected.
+   */
+  public static void main(String[] args) {
+    // initialize Logging
+    try {
+<span class="nc" id="L44">      ClassLoader classLoader = Application.class.getClassLoader();</span>
+<span class="nc" id="L45">      final InputStream logConfig = classLoader.getResourceAsStream(&quot;log.properties&quot;);</span>
+<span class="nc" id="L46">      LogManager.getLogManager().readConfiguration(logConfig);</span>
+<span class="nc" id="L47">    } catch (Exception e) {</span>
+<span class="nc" id="L48">      e.printStackTrace();</span>
+<span class="nc" id="L49">      System.err.println(&quot;Could not initialize log manager because: &quot; + e.getMessage());</span>
+<span class="nc" id="L50">    }</span>
+
+    // create a single PlayerLobby
+<span class="nc" id="L53">    final PlayerLobby playerLobby = new PlayerLobby();</span>
+
+
+<span class="nc" id="L56">    final GameList gameList = new GameList();</span>
+
+    // The application uses FreeMarker templates to generate the HTML
+    // responses sent back to the client. This will be the engine processing
+    // the templates and associated data.
+<span class="nc" id="L61">    final TemplateEngine templateEngine = new FreeMarkerEngine();</span>
+
+    // The application uses Gson to generate JSON representations of Java objects.
+    // This should be used by your Ajax Routes to generate JSON for the HTTP
+    // response to Ajax requests.
+<span class="nc" id="L66">    final Gson gson = new Gson();</span>
+
+    // inject the game center and freemarker engine into web server
+<span class="nc" id="L69">    final WebServer webServer = new WebServer(gameList, playerLobby, templateEngine, gson);</span>
+
+    // inject web server into application
+<span class="nc" id="L72">    final Application app = new Application(webServer);</span>
+
+
+
+    // start the application up
+<span class="nc" id="L77">    app.initialize();</span>
+<span class="nc" id="L78">  }</span>
+
+  //
+  // Attributes
+  //
+
+  private final WebServer webServer;
+
+  //
+  // Constructor
+  //
+
+<span class="nc" id="L90">  private Application(final WebServer webServer) {</span>
+    // validation
+<span class="nc" id="L92">    Objects.requireNonNull(webServer, &quot;webServer must not be null&quot;);</span>
+    //
+<span class="nc" id="L94">    this.webServer = webServer;</span>
+<span class="nc" id="L95">  }</span>
+
+  //
+  // Private methods
+  //
+
+  private void initialize() {
+<span class="nc" id="L102">    LOG.config(&quot;WebCheckers is initializing.&quot;);</span>
+
+    // configure Spark and startup the Jetty web server
+<span class="nc" id="L105">    webServer.initialize();</span>
+
+    // other applications might have additional services to configure
+
+<span class="nc" id="L109">    LOG.config(&quot;WebCheckers initialization complete.&quot;);</span>
+<span class="nc" id="L110">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

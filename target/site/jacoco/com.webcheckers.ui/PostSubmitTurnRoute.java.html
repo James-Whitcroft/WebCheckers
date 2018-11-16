@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PostSubmitTurnRoute.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.ui</a> &gt; <span class="el_source">PostSubmitTurnRoute.java</span></div><h1>PostSubmitTurnRoute.java</h1><pre class="source lang-java linenums">package com.webcheckers.ui;
+import com.google.gson.Gson;
+import com.webcheckers.Appl.GameList;
+import com.webcheckers.Model.*;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+import spark.Session;
+
+
+public class PostSubmitTurnRoute implements Route {
+    //region Attributes
+
+    private GameList gameList;
+    private Gson gson;
+
+    //endregion
+
+    //region Constructor
+
+<span class="nc" id="L21">    public PostSubmitTurnRoute( GameList gameList, Gson gson) {</span>
+<span class="nc" id="L22">        this.gameList = gameList;</span>
+<span class="nc" id="L23">        this.gson = gson;</span>
+<span class="nc" id="L24">    }</span>
+
+    //endregion
+
+    //region Public Methods
+
+    @Override
+    public Object handle(Request request, Response response) {
+        // retrieve the HTTP session
+<span class="nc" id="L33">        final Session httpSession = request.session();</span>
+<span class="nc" id="L34">        String playerName = httpSession.attribute(PostSignInRoute.SESSION_ATTR);</span>
+<span class="nc" id="L35">        Player test = new Player(playerName);</span>
+<span class="nc" id="L36">        BoardModel model = gameList.getBoardModel(test);</span>
+
+<span class="nc" id="L38">        Position lastPos = model.getPendingMoves().getLast().getEnd();</span>
+<span class="nc bnc" id="L39" title="All 4 branches missed.">        if (model.isJumping() &amp;&amp; MoveValidator.pieceHasJump(model, lastPos)) {</span>
+<span class="nc" id="L40">            return gson.toJson(new Message(Message.TYPE.error, &quot;Finish your jump!&quot;));</span>
+        }
+
+<span class="nc" id="L43">        model.makeMoves();</span>
+<span class="nc" id="L44">        model.changeTurns();</span>
+<span class="nc bnc" id="L45" title="All 4 branches missed.">        if (!MoveValidator.teamHasMove(model, model.getRedPlayer().equals(test) ? Piece.color.WHITE : Piece.color.RED) ||</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">                model.getWinner() != null) {</span>
+
+<span class="nc" id="L48">            Player red = gameList.getBoardModel(test).getRedPlayer();</span>
+<span class="nc" id="L49">            Player white = gameList.getBoardModel(test).getWhitePlayer();</span>
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            if (test.equals(red)) {</span>
+<span class="nc" id="L52">                red.setInGame(false);</span>
+            } else {
+<span class="nc" id="L54">                white.setInGame(false);</span>
+            }
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            String winner = model.getWinner() == null ? &quot;You won. &quot; : model.getWinner().getName() + &quot; has won. &quot;;</span>
+<span class="nc" id="L57">            return gson.toJson(new Message(Message.TYPE.error, winner + &quot;Game over.&quot;));</span>
+        }
+<span class="nc" id="L59">        return gson.toJson(new Message(Message.TYPE.info, &quot;Waiting&quot;));</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

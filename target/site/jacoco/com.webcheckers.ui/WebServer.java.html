@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebServer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.ui</a> &gt; <span class="el_source">WebServer.java</span></div><h1>WebServer.java</h1><pre class="source lang-java linenums">package com.webcheckers.ui;
+
+import static spark.Spark.*;
+
+import java.util.Objects;
+import java.util.logging.Logger;
+
+import com.google.gson.Gson;
+
+import com.webcheckers.Appl.GameList;
+import com.webcheckers.Appl.PlayerLobby;
+import spark.TemplateEngine;
+
+
+/**
+ * The server that initializes the set of HTTP request handlers.
+ * This defines the &lt;em&gt;web application interface&lt;/em&gt; for this
+ * WebCheckers application.
+ *
+ * &lt;p&gt;
+ * There are multiple ways in which you can have the client issue a
+ * request and the application generate responses to requests. If your team is
+ * not careful when designing your approach, you can quickly create a mess
+ * where no one can remember how a particular request is issued or the response
+ * gets generated. Aim for consistency in your approach for similar
+ * activities or requests.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;Design choices for how the client makes a request include:
+ * &lt;ul&gt;
+ *     &lt;li&gt;Request URL&lt;/li&gt;
+ *     &lt;li&gt;HTTP verb for request (GET, POST, PUT, DELETE and so on)&lt;/li&gt;
+ *     &lt;li&gt;&lt;em&gt;Optional:&lt;/em&gt; Inclusion of request parameters&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;Design choices for generating a response to a request include:
+ * &lt;ul&gt;
+ *     &lt;li&gt;View templates with conditional elements&lt;/li&gt;
+ *     &lt;li&gt;Use different view templates based on results of executing the client request&lt;/li&gt;
+ *     &lt;li&gt;Redirecting to a different application URL&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/p&gt;
+ *
+ * @author &lt;a href='mailto:bdbvse@rit.edu'&gt;Bryan Basham&lt;/a&gt;
+ */
+public class WebServer {
+<span class="nc" id="L48">  private static final Logger LOG = Logger.getLogger(WebServer.class.getName());</span>
+
+  //
+  // Constants
+  //
+
+  /**
+   * @todo fix the /board /game swap ...or not? (&gt;o.O)&gt;♣ good luck.
+   * The URL pattern to request the Home page.
+   */
+
+  static final String HOME_URL = &quot;/&quot;;
+  static final String SIGNIN_URL = &quot;/signin&quot;;
+  static final String SIGNOUT_URL = &quot;/signout&quot;;
+  static final String GAME_URL = &quot;/board&quot;;
+  static final String MESSAGE_URL = &quot;/message&quot;;
+  static final String BOARD_URL = &quot;/game&quot;;
+  static final String VALIDATE_URL = &quot;/validateMove&quot;;
+  static final String CHECK_URL = &quot;/checkTurn&quot;;
+  static final String SUBMIT_URL = &quot;/submitTurn&quot;;
+  static final String RESIGN_URL = &quot;/resignGame&quot;;
+  static final String BACKUP_URL = &quot;/backupMove&quot;;
+
+  //
+  // Attributes
+  //
+
+  private final PlayerLobby playerLobby;
+  private final TemplateEngine templateEngine;
+  private final Gson gson;
+  private final GameList gameList;
+
+  //
+  // Constructor
+  //
+
+  /**
+   * The constructor for the Web Server.
+   *
+   * @param playerLobby
+   *    The site wide {@link PlayerLobby} object
+   * @param templateEngine
+   *    The default {@link TemplateEngine} to render page-level HTML views.
+   * @param gson
+   *    The Google JSON parser object used to render Ajax responses.
+   *
+   * @throws NullPointerException
+   *    If any of the parameters are {@code null}.
+   */
+<span class="nc" id="L97">  public WebServer(final GameList gameList, final PlayerLobby playerLobby, final TemplateEngine templateEngine, final Gson gson) {</span>
+    // validation
+<span class="nc" id="L99">    Objects.requireNonNull(playerLobby, &quot;playerLobby must not be null&quot;);</span>
+<span class="nc" id="L100">    Objects.requireNonNull(templateEngine, &quot;templateEngine must not be null&quot;);</span>
+<span class="nc" id="L101">    Objects.requireNonNull(gson, &quot;gson must not be null&quot;);</span>
+    //
+<span class="nc" id="L103">    this.gameList = gameList;</span>
+<span class="nc" id="L104">    this.playerLobby = playerLobby;</span>
+<span class="nc" id="L105">    this.templateEngine = templateEngine;</span>
+<span class="nc" id="L106">    this.gson = gson;</span>
+<span class="nc" id="L107">  }</span>
+
+  //
+  // Public methods
+  //
+
+  /**
+   * Initialize all of the HTTP routes that make up this web application.
+   *
+   * &lt;p&gt;
+   * Initialization of the web server includes defining the location for static
+   * files, and defining all routes for processing client requests. The method
+   * returns after the web server finishes its initialization.
+   * &lt;/p&gt;
+   */
+  public void initialize() {
+
+    // Configuration to serve static files
+<span class="nc" id="L125">    staticFileLocation(&quot;/public&quot;);</span>
+
+    //// Setting any route (or filter) in Spark triggers initialization of the
+    //// embedded Jetty web server.
+
+    //// A route is set for a request verb by specifying the path for the
+    //// request, and the function callback (request, response) -&gt; {} to
+    //// process the request. The order that the routes are defined is
+    //// important. The first route (request-path combination) that matches
+    //// is the one which is invoked. Additional documentation is at
+    //// http://sparkjava.com/documentation.html and in Spark tutorials.
+
+    //// Each route (processing function) will check if the request is valid
+    //// from the client that made the request. If it is valid, the route
+    //// will extract the relevant data from the request and pass it to the
+    //// application object delegated with executing the request. When the
+    //// delegate completes execution of the request, the route will create
+    //// the parameter map that the response template needs. The data will
+    //// either be in the value the delegate returns to the route after
+    //// executing the request, or the route will query other application
+    //// objects for the data needed.
+
+    //// FreeMarker defines the HTML response using templates. Additional
+    //// documentation is at
+    //// http://freemarker.org/docs/dgui_quickstart_template.html.
+    //// The Spark FreeMarkerEngine lets you pass variable values to the
+    //// template via a map. Additional information is in online
+    //// tutorials such as
+    //// http://benjamindparrish.azurewebsites.net/adding-freemarker-to-java-spark/.
+
+    //// These route definitions are examples. You will define the routes
+    //// that are appropriate for the HTTP client interface that you define.
+    //// Create separate Route classes to handle each route; this keeps your
+    //// code clean; using small classes.
+
+    // Shows the Checkers game Home page.
+<span class="nc" id="L161">    get(HOME_URL, new GetHomeRoute(playerLobby, templateEngine));</span>
+
+    // Shows the Checkers sign in page
+<span class="nc" id="L164">    get(SIGNIN_URL, new GetSignInRoute(templateEngine));</span>
+
+    // POST to the sign in page
+<span class="nc" id="L167">    post(SIGNIN_URL, new PostSignInRoute(playerLobby, templateEngine));</span>
+
+    // GET sign out route
+<span class="nc" id="L170">    get(SIGNOUT_URL, new GetSignOutRoute(playerLobby, templateEngine));</span>
+
+    // GET game route
+<span class="nc" id="L173">    get(GAME_URL, new GetGameRoute(gameList, playerLobby, templateEngine));</span>
+
+    // GET message route
+<span class="nc" id="L176">    get(MESSAGE_URL, new GetErrorMessageRoute(templateEngine));</span>
+
+    // GET board route
+<span class="nc" id="L179">    get(BOARD_URL, new GetBoardRoute(gameList, playerLobby, templateEngine, gson));</span>
+
+    // Post validate move route
+<span class="nc" id="L182">    post(VALIDATE_URL, new PostValidateMoveRoute(playerLobby, gameList, gson));</span>
+
+    // POST check turn route
+<span class="nc" id="L185">    post(CHECK_URL, new PostCheckTurnRoute(gameList, playerLobby, gson));</span>
+
+    // POST submit turn
+<span class="nc" id="L188">    post(SUBMIT_URL, new PostSubmitTurnRoute(gameList, gson));</span>
+
+    // POST resign route
+<span class="nc" id="L191">    post(RESIGN_URL, new PostResignGameRoute(gameList, gson));</span>
+
+    // POST back up turn route; backs up last non-submitted move
+<span class="nc" id="L194">    post(BACKUP_URL, new PostBackUpMoveRoute(gameList, playerLobby, gson));</span>
+
+<span class="nc" id="L196">    LOG.config(&quot;WebServer is initialized.&quot;);</span>
+<span class="nc" id="L197">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

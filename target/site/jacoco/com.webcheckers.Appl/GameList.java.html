@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameList.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.Appl</a> &gt; <span class="el_source">GameList.java</span></div><h1>GameList.java</h1><pre class="source lang-java linenums">package com.webcheckers.Appl;
+
+import com.webcheckers.Model.BoardModel;
+import com.webcheckers.ui.BoardView;
+import com.webcheckers.Model.Player;
+
+import java.util.HashMap;
+
+/**
+ * Keeps track of all ongoing games on the server and allows easy access to the games
+ */
+public class GameList {
+    
+    //region Attributes
+
+    /**
+     * Keeps track of all the ongoing games
+     */
+    private HashMap&lt;String, BoardModel&gt; gameList;
+
+    //endregion
+
+    //region Constructor
+
+<span class="fc" id="L25">    public GameList() {</span>
+<span class="fc" id="L26">        gameList = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L27">    }</span>
+
+    //endregion
+
+    //region Private Methods
+
+    private synchronized BoardModel getModel(Player player) {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (gameExists(player.getName())) {</span>
+<span class="fc" id="L35">            return gameList.get(player.getName());</span>
+        }
+<span class="fc" id="L37">        return null;</span>
+    }
+
+
+    //endregion
+
+    //region Public Methods
+    /**
+     * Adds a game to the server side list of games
+     * @param model the game to be added
+     * @return true if the game is successfully added
+     */
+    public synchronized boolean addGame(BoardModel model) {
+<span class="fc" id="L50">        String whiteName = model.getWhitePlayer().getName();</span>
+<span class="fc" id="L51">        String redName = model.getRedPlayer().getName();</span>
+
+
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">        if (!(gameExists(whiteName) &amp;&amp; gameExists(redName))) {</span>
+<span class="fc" id="L55">            gameList.put(model.getWhitePlayer().getName(), model);</span>
+<span class="fc" id="L56">            gameList.put(model.getRedPlayer().getName(), model);</span>
+<span class="fc" id="L57">            return true;</span>
+        }
+<span class="fc" id="L59">        return false;</span>
+    }
+
+    public synchronized boolean gameExists(String playerName) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        return gameList.get(playerName) != null;</span>
+    }
+
+    /**
+     * @param player the player whose boardModel is to be returned
+     * @return the boardModel corresponding to the given player
+     */
+    public synchronized BoardModel getBoardModel(Player player) {
+<span class="fc" id="L71">        return getModel(player);</span>
+    }
+
+    /**
+     * @param player the player who is requesting the BoardView
+     * @return the boardView of the model corresponding to the given player
+     */
+    public synchronized BoardView getBoardView(Player player) {
+<span class="fc" id="L79">        BoardModel model = getModel(player);</span>
+<span class="fc" id="L80">        return new BoardView(player, model);</span>
+    }
+
+    public synchronized void removeBoard(Player player) {
+<span class="fc" id="L84">        gameList.remove(player.getName().toLowerCase());</span>
+<span class="fc" id="L85">    }</span>
+
+    //endregion
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

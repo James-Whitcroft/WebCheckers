@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerLobby.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.Appl</a> &gt; <span class="el_source">PlayerLobby.java</span></div><h1>PlayerLobby.java</h1><pre class="source lang-java linenums">package com.webcheckers.Appl;
+
+import com.webcheckers.Model.Player;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class PlayerLobby {
+
+    private HashMap&lt;String, Player&gt; lobby;
+
+    /**
+     * constructor creates an empty Lobby
+     */
+<span class="fc" id="L18">    public PlayerLobby() {</span>
+<span class="fc" id="L19">        lobby = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L20">    }</span>
+
+    /**
+     * Handles name validation and storage of Players
+     *
+     * @param name
+     *      String representing a Players name
+     * @return
+     *      true on successful addition to Lobby else false
+     */
+    public synchronized boolean addPlayer(String name) {
+<span class="fc bfc" id="L31" title="All 6 branches covered.">        if(name.length() &lt; 1 || name.length() &gt; 25 || name.equals(&quot; &quot;)) { return false; }</span>
+<span class="fc" id="L32">        Pattern pattern = Pattern.compile(&quot;[^A-Za-z0-9 ]&quot;);</span>
+<span class="fc" id="L33">        Matcher match = pattern.matcher(name);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if(match.find()) { return false; }</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if(!lobby.containsKey(name.toLowerCase())) {</span>
+<span class="fc" id="L36">            lobby.put(name.toLowerCase(), new Player(name));</span>
+<span class="fc" id="L37">            return true;</span>
+        }
+<span class="fc" id="L39">        return false;</span>
+    }
+
+    /**
+     * Remove player from the lobby
+     *
+     * @param player
+     *      the String to remove
+     */
+    public synchronized void removePlayer(String player) {
+<span class="fc" id="L49">        lobby.remove(player.toLowerCase());</span>
+<span class="fc" id="L50">    }</span>
+
+
+    public synchronized Player getPlayer(String player) {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if(lobby.containsKey(player.toLowerCase())) {</span>
+<span class="fc" id="L55">            return lobby.get(player.toLowerCase());</span>
+        }
+<span class="fc" id="L57">        return null;</span>
+    }
+
+    /**
+     * Get all the active players in the Lobby
+     * @return
+     *      A collection of Player objects
+     */
+    public Collection&lt;Player&gt; getActivePlayers() {
+<span class="fc" id="L66">        return lobby.values();</span>
+    }
+
+    /**
+     * Get a collection of active player's minus excluded player
+     *
+     * @param exclude
+     *      current player to exclude
+     * @return
+     *      a String Collection of Player names
+     */
+    public Collection&lt;String&gt; getOtherActivePlayers(Player exclude) {
+<span class="fc" id="L78">        Collection&lt;String&gt; temp = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L79">        lobby.values().forEach(player -&gt; temp.add(player.getName()));</span>
+<span class="fc" id="L80">        temp.remove(exclude.getName());</span>
+<span class="fc" id="L81">        return temp;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

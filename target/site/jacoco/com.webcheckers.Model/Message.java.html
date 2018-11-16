@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Message.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.Model</a> &gt; <span class="el_source">Message.java</span></div><h1>Message.java</h1><pre class="source lang-java linenums">package com.webcheckers.Model;
+
+
+import java.util.Objects;
+
+/**
+ * Represents the two different types of messages that
+ * can be transmitted, error or informational. Holds the
+ * type and the text that will be displayed
+ * @author Cheyenne
+ */
+
+public class Message {
+
+    private String text;
+    private TYPE type;
+
+<span class="fc" id="L18">    public enum TYPE {</span>
+<span class="fc" id="L19">        info,</span>
+<span class="fc" id="L20">        error</span>
+    }
+
+    /**
+     * Create Message with type specified
+     * @param messageType the type of message, ERROR or INFO
+     */
+<span class="nc" id="L27">    public Message (TYPE messageType){</span>
+<span class="nc" id="L28">        this.type = messageType;</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        if(messageType == TYPE.error){</span>
+<span class="nc" id="L30">            this.text = &quot;ERROR: The player you have chosen is currently in a game, please select another.&quot;;</span>
+        }
+        else{
+<span class="nc" id="L33">            this.text = &quot;This player is available for a game, enjoy your game!&quot;;</span>
+        }
+<span class="nc" id="L35">    }</span>
+<span class="fc" id="L36">    public Message (TYPE messageType, String text){</span>
+<span class="fc" id="L37">        this.type = messageType;</span>
+<span class="fc" id="L38">        this.text = text;</span>
+<span class="fc" id="L39">    }</span>
+
+    /**
+     * Retrieve the string text message stored based on the type
+     * @return String text message
+     */
+    public String getText(){
+<span class="nc" id="L46">        return text;</span>
+    }
+
+    /**
+     * Retrieve the type of message
+     * @return  message type, ERROR or INFO
+     */
+    public TYPE getType(){
+<span class="nc" id="L54">        return type;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (obj instanceof Message) {</span>
+<span class="pc bpc" id="L60" title="2 of 4 branches missed.">            return this.type == ((Message) obj).type &amp;&amp; this.text.equals(((Message) obj).text);</span>
+        }
+<span class="nc" id="L62">        return false;</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L67">        return Objects.hash(type, text);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

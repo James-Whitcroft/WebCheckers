@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GetHomeRoute.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.ui</a> &gt; <span class="el_source">GetHomeRoute.java</span></div><h1>GetHomeRoute.java</h1><pre class="source lang-java linenums">package com.webcheckers.ui;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Logger;
+
+import com.webcheckers.Appl.GameList;
+import com.webcheckers.Appl.PlayerLobby;
+import com.webcheckers.Model.Player;
+import spark.*;
+
+import static spark.Spark.halt;
+
+/**
+ * The UI Controller to GET the Home page.
+ *
+ * @author &lt;a href='mailto:bdbvse@rit.edu'&gt;Bryan Basham&lt;/a&gt;
+ */
+public class GetHomeRoute implements Route {
+<span class="fc" id="L21">  private static final Logger LOG = Logger.getLogger(GetHomeRoute.class.getName());</span>
+  static final String SIGNED_IN = &quot;signedIn&quot;;
+  static final String PLAYER_NAME = &quot;playerName&quot;;
+  static final String ACTIVE_PLAYERS = &quot;activePlayers&quot;;
+  static final String ACTIVE_PLAYER_COUNT = &quot;activePlayerCount&quot;;
+
+  static final String VIEW_NAME = &quot;home.ftl&quot;;
+
+  private final PlayerLobby playerLobby;
+  private final TemplateEngine templateEngine;
+
+
+  /**
+   * Create the Spark Route (UI controller) for the
+   * {@code GET /} HTTP request.
+   *
+   * @param playerLobby
+   *  the site wide PlayerLobby
+   * @param templateEngine
+   *   the HTML template rendering engine
+   */
+<span class="fc" id="L42">  public GetHomeRoute(PlayerLobby playerLobby, final TemplateEngine templateEngine) {</span>
+    // validation
+<span class="fc" id="L44">    Objects.requireNonNull(playerLobby, &quot;playerLobby must not be null&quot;);</span>
+<span class="fc" id="L45">    Objects.requireNonNull(templateEngine, &quot;templateEngine must not be null&quot;);</span>
+    //
+<span class="fc" id="L47">    this.playerLobby = playerLobby;</span>
+<span class="fc" id="L48">    this.templateEngine = templateEngine;</span>
+    //
+<span class="fc" id="L50">    LOG.config(&quot;GetHomeRoute is initialized.&quot;);</span>
+<span class="fc" id="L51">  }</span>
+
+  /**
+   * Render the WebCheckers Home page.
+   *
+   * @param request
+   *   the HTTP request
+   * @param response
+   *   the HTTP response
+   *
+   * @return
+   *   the rendered HTML for the Home page
+   */
+  @Override
+  public Object handle(Request request, Response response) {
+<span class="fc" id="L66">    LOG.finer(&quot;GetHomeRoute is invoked.&quot;);</span>
+<span class="fc" id="L67">    Map&lt;String, Object&gt; vm = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L68">    vm.put(&quot;title&quot;, &quot;Welcome!&quot;);</span>
+    // retrieve the HTTP session
+<span class="fc" id="L70">    final Session httpSession = request.session();</span>
+<span class="fc" id="L71">    String playerName = httpSession.attribute(PostSignInRoute.SESSION_ATTR);</span>
+    // if the player has an id set
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if(playerName != null) {</span>
+<span class="fc" id="L74">      vm.put(SIGNED_IN, true);</span>
+<span class="fc" id="L75">      vm.put(PLAYER_NAME, playerName);</span>
+      // put the list of OTHER active players, players excluding myself
+<span class="fc" id="L77">      vm.put(ACTIVE_PLAYERS, playerLobby.getOtherActivePlayers(new Player(playerName)));</span>
+
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">      if (playerLobby.getPlayer(playerName).isInGame()) {</span>
+<span class="nc" id="L80">        response.redirect(WebServer.BOARD_URL);</span>
+<span class="nc" id="L81">        halt();</span>
+<span class="nc" id="L82">        return null;</span>
+      }
+    } else {
+<span class="nc" id="L85">      vm.put(SIGNED_IN, false);</span>
+    }
+    // display the total number of players to an un-signed in player
+<span class="fc" id="L88">    vm.put(ACTIVE_PLAYER_COUNT, playerLobby.getActivePlayers().size());</span>
+<span class="fc" id="L89">    return templateEngine.render(new ModelAndView(vm , GetHomeRoute.VIEW_NAME));</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

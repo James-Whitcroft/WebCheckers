@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MoveValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.Model</a> &gt; <span class="el_source">MoveValidator.java</span></div><h1>MoveValidator.java</h1><pre class="source lang-java linenums">package com.webcheckers.Model;
+
+/**
+ * Validates moves and determines whether or not they are legal in a game of American Checkers
+ */
+<span class="nc" id="L6">public class MoveValidator {</span>
+
+    //region Public Methods
+
+    /**
+     * Determines if a move is valid and legal
+     * @param model the board model on which the move is occurring
+     * @param move the move to be validated
+     * @return true if it is a valid move, false otherwise
+     */
+    public static boolean validateMove(BoardModel model, Move move) {
+<span class="fc" id="L17">        final Space start = model.getSpacePendingMoves(move.getStart());</span>
+<span class="fc" id="L18">        final Space end = model.getSpacePendingMoves(move.getEnd());</span>
+<span class="fc" id="L19">        final Piece piece = start.getPiece();</span>
+
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        if (!end.isValid()) { // If the destination is a valid space (open and dark)</span>
+<span class="fc" id="L22">            return false;</span>
+        }
+
+<span class="fc" id="L25">        int rowDiff = Math.abs(move.getEnd().getRow() - move.getStart().getRow());</span>
+<span class="fc bfc" id="L26" title="All 4 branches covered.">        if (rowDiff &gt; 2 || rowDiff &lt; 1) { // Check if piece is only moving 1 or 2 rows</span>
+<span class="fc" id="L27">            return false;</span>
+        }
+<span class="fc" id="L29">        int cellDiff = Math.abs(move.getEnd().getCell() - move.getStart().getCell());</span>
+
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (cellDiff == 1) { // move</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">            if (model.isMoving()) {</span>
+<span class="nc" id="L33">                return false;</span>
+            }
+<span class="fc bfc" id="L35" title="All 2 branches covered.">            if (isMovingForward(piece.getColor(), move)) {</span>
+<span class="fc" id="L36">                return validateSimpleMove(move, model, piece);</span>
+            } else {
+<span class="fc" id="L38">                return validateBackwardsMove(move, model, piece);</span>
+            }
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        } else if (cellDiff == 2) { // jump</span>
+<span class="pc bpc" id="L41" title="3 of 4 branches missed.">            if (model.isMoving() &amp;&amp; !model.isJumping()) {</span>
+<span class="nc" id="L42">                return false;</span>
+            }
+<span class="fc bfc" id="L44" title="All 2 branches covered.">            if (isMovingForward(piece.getColor(), move)) {</span>
+<span class="fc" id="L45">                return validateSimpleJump(move, model, piece);</span>
+            } else {
+<span class="fc" id="L47">                return validateBackwardsJump(move, model, piece);</span>
+            }
+        } else { // error
+<span class="fc" id="L50">            return false;</span>
+        }
+    }
+
+    /**
+     * Used to check whether a team has a valid move to determine whether or not they lose from being unable to move
+     * @param model the model to be tested
+     * @param team the team to check if they have a move
+     * @return true if one or more moves are available
+     */
+    public static boolean teamHasMove(BoardModel model, Piece.color team) {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        for (int r = 0; r &lt; 8; r++) {</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            for (int c = 0; c &lt; 8; c++) {</span>
+<span class="fc" id="L63">                Position pos = new Position(r,c);</span>
+<span class="fc" id="L64">                Piece piece = model.getSpace(pos).getPiece();</span>
+<span class="fc bfc" id="L65" title="All 6 branches covered.">                if (piece != null &amp;&amp; piece.getColor() == team &amp;&amp; pieceHasMove(model, pos)) {</span>
+<span class="fc" id="L66">                    return true;</span>
+                }
+            }
+        }
+<span class="fc" id="L70">        return false;</span>
+    }
+
+    /**
+     * Determines if a single piece has an available jump
+     * @param model the model to be checked
+     * @param piecePos the position of the piece to be checked
+     * @return true if the piece has an available jump
+     */
+    public static boolean pieceHasJump(BoardModel model, Position piecePos) {
+<span class="fc" id="L80">        Piece piece = model.getSpacePendingMoves(piecePos).getPiece();</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        int teamMod = piece.getColor() == Piece.color.RED ? 1 : -1; // multiplier for row movement to determine forward direction</span>
+<span class="fc" id="L82">        int forwardRow = piecePos.getRow() + 2 * teamMod;</span>
+<span class="fc" id="L83">        int rightCell = piecePos.getCell() + 2;</span>
+<span class="fc" id="L84">        int leftCell = piecePos.getCell() - 2;</span>
+<span class="pc bpc" id="L85" title="1 of 4 branches missed.">        boolean leftValid = leftCell &gt;= 0 &amp;&amp; leftCell &lt; 8;</span>
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">        boolean rightValid = rightCell &gt;= 0 &amp;&amp; rightCell &lt; 8;</span>
+
+<span class="pc bpc" id="L88" title="1 of 4 branches missed.">        if (forwardRow &gt;= 0 &amp;&amp; forwardRow &lt; 8) {</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (rightValid) {</span>
+<span class="fc" id="L90">                Move forwardRight = new Move(piecePos, new Position(forwardRow, rightCell));</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">                if (validateSimpleJump(forwardRight, model, piece)) {</span>
+<span class="fc" id="L92">                    return true;</span>
+                }
+            }
+<span class="fc bfc" id="L95" title="All 2 branches covered.">            if (leftValid) {</span>
+<span class="fc" id="L96">                Move forwardLeft = new Move(piecePos, new Position(forwardRow, leftCell));</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">                if (validateSimpleJump(forwardLeft, model, piece)) {</span>
+<span class="nc" id="L98">                    return true;</span>
+                }
+            }
+        }
+<span class="fc" id="L102">        int backRow = piecePos.getRow() - 2 * teamMod;</span>
+<span class="fc bfc" id="L103" title="All 4 branches covered.">        if (backRow &gt;= 0 &amp;&amp; backRow &lt; 8) {</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">            if (piece.getType() == Piece.pieceType.KING) {</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">                if (rightValid) {</span>
+<span class="fc" id="L106">                    Move backRight = new Move(piecePos, new Position(backRow, rightCell));</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">                    if (validateBackwardsJump(backRight, model, piece)) {</span>
+<span class="nc" id="L108">                        return true;</span>
+                    }
+                }
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                if (leftValid) {</span>
+<span class="fc" id="L112">                    Move backLeft = new Move(piecePos, new Position(backRow, leftCell));</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">                    if (validateBackwardsJump(backLeft, model, piece)) {</span>
+<span class="fc" id="L114">                        return true;</span>
+                    }
+                }
+            }
+        }
+<span class="fc" id="L119">        return false;</span>
+    }
+
+
+    //endregion
+
+    //region Private Methods
+
+    /**
+     * Determines whether a piece is moving forward relative to its player
+     * @param color the color of the moving piece
+     * @param move the move object to be examined
+     * @return true if the piece is moving forward
+     */
+    private static boolean isMovingForward(Piece.color color, Move move) {
+<span class="fc" id="L134">        int rowDiff = move.getEnd().getRow() - move.getStart().getRow();</span>
+
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (color == Piece.color.RED) {</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">            return rowDiff &gt; 0;</span>
+        }
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        else if (color == Piece.color.WHITE) {</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            return rowDiff &lt; 0;</span>
+        }
+<span class="nc" id="L142">        return false; // Should never reach this</span>
+    }
+
+    /**
+     * Validates a simple move (forwards, no jump)
+     * @param model the board model on which the move is occurring
+     * @param piece the piece which is moving
+     * @return true if the move is valid
+     */
+    private static boolean validateSimpleMove(Move move, BoardModel model, Piece piece) {
+<span class="fc" id="L152">        Space space = model.getSpacePendingMoves(move.getEnd());</span>
+<span class="fc bfc" id="L153" title="All 4 branches covered.">        return space.isValid() &amp;&amp; !isJumpAvailable(model, piece.getColor());</span>
+    }
+
+    /**
+     * Validates a backwards move (backwards, no jump)
+     * @param model the board model on which the move is occurring
+     * @param piece the piece which is moving
+     * @return true if the move is valid
+     */
+    private static boolean validateBackwardsMove(Move move, BoardModel model, Piece piece) {
+<span class="fc" id="L163">        Space space = model.getSpacePendingMoves(move.getEnd());</span>
+<span class="pc bpc" id="L164" title="2 of 6 branches missed.">        return space.isValid() &amp;&amp; piece.getType() == Piece.pieceType.KING &amp;&amp; !isJumpAvailable(model, piece.getColor());</span>
+    }
+
+    /**
+     * Validates a simple jump (forwards, jump)
+     * @param move the move which is being examined
+     * @param model the board model on which the move is occurring
+     * @param piece the piece which is moving
+     * @return true if the move is valid
+     */
+    private static boolean validateSimpleJump(Move move, BoardModel model, Piece piece) {
+<span class="fc" id="L175">        Position start = move.getStart();</span>
+<span class="fc" id="L176">        Position end = move.getEnd();</span>
+<span class="fc" id="L177">        Space space = model.getSpacePendingMoves(end);</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (!space.isValid()) {</span>
+<span class="fc" id="L179">            return false;</span>
+        }
+
+<span class="fc" id="L182">        Position jumpedPos = new Position((start.getRow() + end.getRow()) / 2,</span>
+<span class="fc" id="L183">                (start.getCell() + end.getCell()) / 2);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        if (model.getSpacePendingMoves(jumpedPos).getPiece() != null &amp;&amp;</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">                model.getSpacePendingMoves(jumpedPos).getPiece().getColor() != piece.getColor()) { // if the jumped piece is on the other team</span>
+<span class="fc" id="L186">                return true;</span>
+        }
+<span class="fc" id="L188">        return false;</span>
+    }
+
+    /**
+     * Validates a backwards jump (backwards, jump)
+     * @param move the move which is being examined
+     * @param model the board model on which the move is occurring
+     * @param piece the piece which is moving
+     * @return true if the move is valid
+     */
+    private static boolean validateBackwardsJump(Move move, BoardModel model, Piece piece) {
+<span class="fc bfc" id="L199" title="All 2 branches covered.">        if (piece.getType() != Piece.pieceType.KING) {</span>
+<span class="fc" id="L200">            return false;</span>
+        }
+<span class="fc" id="L202">        Position start = move.getStart();</span>
+<span class="fc" id="L203">        Position end = move.getEnd();</span>
+<span class="fc" id="L204">        Space space = model.getSpacePendingMoves(end);</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (!space.isValid()) {</span>
+<span class="fc" id="L206">            return false;</span>
+        }
+
+<span class="fc" id="L209">        Position jumpedPos = new Position((start.getRow() + end.getRow()) / 2,</span>
+<span class="fc" id="L210">                (start.getCell() + end.getCell()) / 2);</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if (model.getSpacePendingMoves(jumpedPos).getPiece() != null &amp;&amp;</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">                model.getSpacePendingMoves(jumpedPos).getPiece().getColor() != piece.getColor()) { // if the jumped piece is on the other team</span>
+<span class="fc" id="L213">            return true;</span>
+        }
+<span class="nc" id="L215">        return false;</span>
+    }
+
+    /**
+     * Determines if there is an available jump to make
+     * @param model the boardModel which will be checked
+     * @param teamColor the team that may have an available jump
+     * @return true if jump is available
+     */
+    private static boolean isJumpAvailable(BoardModel model, Piece.color teamColor) {
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        for (int r = 0; r &lt; 8; r++) {</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">            for (int c = 0; c &lt; 8; c++) {</span>
+<span class="fc" id="L227">                Position position = new Position(r, c);</span>
+<span class="fc" id="L228">                Space space = model.getSpacePendingMoves(position);</span>
+<span class="fc bfc" id="L229" title="All 6 branches covered.">                if (space.getPiece() != null &amp;&amp; space.getPiece().getColor() == teamColor &amp;&amp; pieceHasJump(model, position)) {</span>
+<span class="fc" id="L230">                    return true;</span>
+                }
+            }
+        }
+<span class="fc" id="L234">        return false;</span>
+    }
+
+    /**
+     * Determines if one piece has an available move or jump
+     * @param model the model to be checked
+     * @param piecePos the position of the piece to be checked
+     * @return true if the piece has a valid move or jump
+     */
+    private static boolean pieceHasMove(BoardModel model, Position piecePos) {
+<span class="fc" id="L244">        Piece piece = model.getSpacePendingMoves(piecePos).getPiece();</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        int teamMod = piece.getColor() == Piece.color.RED ? 1 : -1; // multiplier for row movement to determine forward direction</span>
+<span class="fc" id="L246">        int forwardRow = piecePos.getRow() + 1 * teamMod;</span>
+<span class="fc" id="L247">        int rightCell = piecePos.getCell() + 1;</span>
+<span class="fc" id="L248">        int leftCell = piecePos.getCell() - 1;</span>
+<span class="pc bpc" id="L249" title="2 of 4 branches missed.">        boolean leftValid = leftCell &gt;= 0 &amp;&amp; leftCell &lt; 8;</span>
+<span class="pc bpc" id="L250" title="2 of 4 branches missed.">        boolean rightValid = rightCell &gt;= 0 &amp;&amp; rightCell &lt; 8;</span>
+
+<span class="pc bpc" id="L252" title="1 of 4 branches missed.">        if (forwardRow &gt;= 0 &amp;&amp; forwardRow &lt; 8) {</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">            if (rightValid) {</span>
+<span class="fc" id="L254">                Move forwardRight = new Move(piecePos, new Position(forwardRow, rightCell));</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">                if (validateSimpleMove(forwardRight, model, piece)) {</span>
+<span class="fc" id="L256">                    return true;</span>
+                }
+            }
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">            if (leftValid) {</span>
+<span class="fc" id="L260">                Move forwardLeft = new Move(piecePos, new Position(forwardRow, leftCell));</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">                if (validateSimpleMove(forwardLeft, model, piece)) {</span>
+<span class="nc" id="L262">                    return true;</span>
+                }
+            }
+        }
+<span class="fc" id="L266">        int backRow = piecePos.getRow() - 1 * teamMod;</span>
+<span class="pc bpc" id="L267" title="2 of 4 branches missed.">        if (backRow &gt;= 0 &amp;&amp; backRow &lt; 8) {</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">            if (piece.getType() == Piece.pieceType.KING) {</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">                if (rightValid) {</span>
+<span class="fc" id="L270">                    Move backRight = new Move(piecePos, new Position(backRow, rightCell));</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">                    if (validateBackwardsMove(backRight, model, piece)) {</span>
+<span class="fc" id="L272">                        return true;</span>
+                    }
+                }
+<span class="nc bnc" id="L275" title="All 2 branches missed.">                if (leftValid) {</span>
+<span class="nc" id="L276">                    Move backLeft = new Move(piecePos, new Position(backRow, leftCell));</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">                    if (validateBackwardsMove(backLeft, model, piece)) {</span>
+<span class="nc" id="L278">                        return true;</span>
+                    }
+                }
+            }
+        }
+<span class="fc" id="L283">        return pieceHasJump(model, piecePos);</span>
+    }
+
+    //endregion
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

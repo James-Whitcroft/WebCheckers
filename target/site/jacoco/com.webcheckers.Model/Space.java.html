@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Space.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.Model</a> &gt; <span class="el_source">Space.java</span></div><h1>Space.java</h1><pre class="source lang-java linenums">package com.webcheckers.Model;
+
+import java.util.Objects;
+
+public class Space {
+
+    private int cellIdx;
+    private boolean isLight; //true = light, false = dark
+    private Piece myPiece;
+
+    /*
+        Space represents one square on a board of checkers.
+        @param cellIdx the index (number) of the space in its row
+        @param isLight the boolean signifying which color the space is
+     */
+<span class="fc" id="L16">    public Space(int cellIdx, boolean isLight) {</span>
+<span class="fc" id="L17">        this.cellIdx = cellIdx;</span>
+<span class="fc" id="L18">        this.myPiece = null;</span>
+<span class="fc" id="L19">        this.isLight = isLight;</span>
+<span class="fc" id="L20">    }</span>
+
+<span class="fc" id="L22">    public Space(int cellIdx, boolean isLight, Piece piece) {</span>
+<span class="fc" id="L23">        this.cellIdx = cellIdx;</span>
+<span class="fc" id="L24">        this.myPiece = piece;</span>
+<span class="fc" id="L25">        this.isLight = isLight;</span>
+<span class="fc" id="L26">    }</span>
+
+    /*
+        returns a copy of the Space
+     */
+<span class="fc" id="L31">    public Space(Space copy) {</span>
+<span class="fc" id="L32">        this.cellIdx = copy.cellIdx;</span>
+<span class="fc" id="L33">        this.isLight = copy.isLight;</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (copy.myPiece != null) {</span>
+<span class="fc" id="L35">            this.myPiece = new Piece(copy.getPiece());</span>
+        }
+        else {
+<span class="fc" id="L38">            myPiece = null;</span>
+        }
+<span class="fc" id="L40">    }</span>
+
+    /*
+        A space is valid if it does not already have a Piece on it,
+        and if it is dark-colored.
+     */
+    public synchronized boolean isValid() {
+<span class="fc bfc" id="L47" title="All 4 branches covered.">        return !isLight &amp;&amp; myPiece == null;</span>
+    }
+
+    /*
+        isValid MUST be called before this method!
+        placePiece assigns a piece to a space as the player moves it.
+        @param piece the checkers piece to be placed in this space.
+     */
+    public boolean placePiece(Piece piece) {
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (piece != null) {</span>
+<span class="fc" id="L57">            myPiece = piece;</span>
+<span class="fc" id="L58">            return true;</span>
+        } else {
+<span class="fc" id="L60">            return false;</span>
+        }
+    }
+
+    public void removePiece() {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (myPiece != null) {</span>
+<span class="fc" id="L66">            myPiece = null;</span>
+        }
+<span class="fc" id="L68">    }</span>
+
+    public Piece getPiece() {
+<span class="fc" id="L71">        return myPiece;</span>
+    }
+
+    public int getCellIdx() {
+<span class="fc" id="L75">        return cellIdx;</span>
+    }
+
+<span class="fc" id="L78">    public boolean getCellColor(){ return isLight; }</span>
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (obj instanceof Space) {</span>
+<span class="fc bfc" id="L83" title="All 4 branches covered.">            if (this.myPiece != null &amp;&amp; ((Space) obj).myPiece != null) { // Both spaces have pieces</span>
+<span class="pc bpc" id="L84" title="3 of 6 branches missed.">                return (this.myPiece.equals(((Space) obj).myPiece) &amp;&amp;</span>
+                        this.cellIdx == ((Space) obj).cellIdx &amp;&amp;
+                        this.isLight == ((Space) obj).isLight);
+            }
+<span class="pc bpc" id="L88" title="1 of 4 branches missed.">            else if (this.myPiece != null || ((Space) obj).myPiece != null) { // When one space has a piece</span>
+<span class="fc" id="L89">                return false;</span>
+            }
+            else { // When no space has a piece
+<span class="pc bpc" id="L92" title="1 of 4 branches missed.">                return (this.cellIdx == ((Space) obj).cellIdx &amp;&amp;</span>
+                        this.isLight == ((Space) obj).isLight);
+            }
+        }
+<span class="fc" id="L96">        return false;</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L101">        return Objects.hash(getPiece(), cellIdx, isLight);</span>
+    }
+
+    public String toString(){
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if(myPiece == null){</span>
+<span class="fc" id="L106">            return &quot;Index: &quot; + cellIdx + &quot;, light space: &quot; + isLight;</span>
+        }
+        else{
+<span class="fc" id="L109">            return &quot;Index: &quot; + cellIdx + &quot;, light space: &quot; + isLight + &quot; occupied: &quot; + true;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

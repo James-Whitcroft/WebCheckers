@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PostSignInRoute.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Web Checkers a'la Spark/Java8</a> &gt; <a href="index.source.html" class="el_package">com.webcheckers.ui</a> &gt; <span class="el_source">PostSignInRoute.java</span></div><h1>PostSignInRoute.java</h1><pre class="source lang-java linenums">package com.webcheckers.ui;
+
+import com.webcheckers.Appl.PlayerLobby;
+import spark.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import static spark.Spark.halt;
+
+public class PostSignInRoute implements Route {
+    //
+    // Constants
+    //
+
+<span class="fc" id="L17">    private final String SIGN_IN = &quot;signIn&quot;;</span>
+<span class="fc" id="L18">    private final String TAKEN = &quot;nameTaken&quot;;</span>
+<span class="fc" id="L19">    private final String TITLE = &quot;title&quot;;</span>
+
+    static final String SESSION_ATTR = &quot;id&quot;;
+    //
+    // Attributes
+    //
+
+    private final PlayerLobby playerLobby;
+    private final TemplateEngine templateEngine;
+
+    //
+    // Constructor
+    //
+
+    /**
+     * The constructor for the {@code POST /guess} route handler.
+     *
+     * @param templateEngine
+     *    template engine to use for rendering HTML page
+     *
+     * @throws NullPointerException
+     *    when the {@code playerLobby} or {@code templateEngine} parameter is null
+     */
+<span class="fc" id="L42">    public PostSignInRoute(PlayerLobby playerLobby, TemplateEngine templateEngine) {</span>
+        // validation
+<span class="fc" id="L44">        Objects.requireNonNull(playerLobby, &quot;playerLobby must not be null&quot;);</span>
+<span class="fc" id="L45">        Objects.requireNonNull(templateEngine, &quot;templateEngine must not be null&quot;);</span>
+        //
+<span class="fc" id="L47">        this.playerLobby = playerLobby;</span>
+<span class="fc" id="L48">        this.templateEngine = templateEngine;</span>
+<span class="fc" id="L49">    }</span>
+
+    //
+    // TemplateViewRoute method
+    //
+
+    /**
+     * {@inheritDoc}
+     *
+     */
+    @Override
+    public String handle(Request request, Response response) {
+        // start building the View-Model
+<span class="fc" id="L62">        final Map&lt;String, Object&gt; vm = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L63">        final String name = request.queryParams(SIGN_IN);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if(playerLobby.addPlayer(name)) {</span>
+<span class="fc" id="L65">            vm.put(TAKEN, false);</span>
+<span class="fc" id="L66">            vm.put(&quot;title&quot;, &quot;Signed in!&quot;);</span>
+            // retrieve the HTTP session
+<span class="fc" id="L68">            final Session httpSession = request.session();</span>
+            // Store unique attribute for player
+<span class="fc" id="L70">            httpSession.attribute(SESSION_ATTR, name);</span>
+<span class="fc" id="L71">            response.redirect(WebServer.HOME_URL);</span>
+<span class="nc" id="L72">            halt();</span>
+<span class="nc" id="L73">            return null;</span>
+        } else {
+<span class="fc" id="L75">            vm.put(TAKEN, true);</span>
+<span class="fc" id="L76">            vm.put(TITLE, &quot;Sign in!&quot;);</span>
+<span class="fc" id="L77">            return templateEngine.render(new ModelAndView(vm, GetSignInRoute.VIEW_NAME));</span>
+        }
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
