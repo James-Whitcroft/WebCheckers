@@ -39,6 +39,20 @@ class PlayerLobbyTest {
     }
 
     @Test
+    void addAIPlayerTest(){
+        // test invalid AI names
+        assertFalse(PlT.addAIPlayer(shortName, 0));
+        assertFalse(PlT.addAIPlayer(spaceName, 0));
+        assertFalse(PlT.addAIPlayer(longName, 0));
+
+        // test when valid AI is added
+        assertTrue(PlT.addAIPlayer(goodName, 0));
+
+        // test fail condition when AI is already made
+        assertFalse(PlT.addAIPlayer(goodName, 0));
+    }
+
+    @Test
     void removePlayerTest() {
 
         assertTrue(PlT.addPlayer(goodName));

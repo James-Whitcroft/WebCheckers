@@ -2,6 +2,7 @@ package com.webcheckers.ui;
 
 import com.google.gson.Gson;
 import com.webcheckers.Appl.GameList;
+import com.webcheckers.Appl.SavedGameList;
 import com.webcheckers.Model.Message;
 import com.webcheckers.Model.Player;
 import spark.Request;
@@ -14,6 +15,7 @@ import java.util.Objects;
 public class PostResignGameRoute implements Route {
 
     private final GameList gameList;
+    private SavedGameList savedGameList;
     private Gson gson;
 
 
@@ -24,7 +26,7 @@ public class PostResignGameRoute implements Route {
      * @param gameList
      *  the site wide PlayerLobby
      */
-    public PostResignGameRoute(GameList gameList, Gson gson) {
+    public PostResignGameRoute(GameList gameList, SavedGameList savedGameList, Gson gson) {
         // validation
         Objects.requireNonNull(gameList, "gameList must not be null");
         //
@@ -59,7 +61,6 @@ public class PostResignGameRoute implements Route {
         } else {
             white.setInGame(false);
         }
-
         gameList.removeBoard(red.equals(test) ? red : white);
 
         return gson.toJson(new Message(Message.TYPE.info, "Resigned"));

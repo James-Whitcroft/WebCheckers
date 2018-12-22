@@ -2,7 +2,10 @@ package com.webcheckers.ui;
 
 import com.webcheckers.Appl.GameList;
 import com.webcheckers.Appl.PlayerLobby;
+import com.webcheckers.Appl.SavedGameList;
+import com.webcheckers.Model.AIPlayer;
 import com.webcheckers.Model.BoardModel;
+import com.webcheckers.Model.Message;
 import com.webcheckers.Model.Player;
 import spark.*;
 
@@ -11,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 
+import static com.webcheckers.ui.GetHomeRoute.MESSAGE;
 import static spark.Spark.halt;
 
 public class GetGameRoute implements Route {
@@ -21,6 +25,7 @@ public class GetGameRoute implements Route {
     private final TemplateEngine templateEngine;
     private final PlayerLobby playerLobby;
     private final GameList gameList;
+    private final SavedGameList savedGames;
 
     /**
      * Create the Spark Route (UI controller) for the
@@ -29,13 +34,14 @@ public class GetGameRoute implements Route {
      * @param templateEngine
      *   the HTML template rendering engine
      */
-    public GetGameRoute(GameList gameList, PlayerLobby playerLobby, final TemplateEngine templateEngine) {
+    public GetGameRoute(GameList gameList, PlayerLobby playerLobby, final SavedGameList savedGames, final TemplateEngine templateEngine) {
         // validation
         Objects.requireNonNull(playerLobby, "playerLobby must not be null");
         Objects.requireNonNull(templateEngine, "templateEngine must not be null");
         //
         this.gameList = gameList;
         this.playerLobby = playerLobby;
+        this.savedGames = savedGames;
         this.templateEngine = templateEngine;
         //
         LOG.config("GetGameRoute is initialized.");
@@ -60,12 +66,23 @@ public class GetGameRoute implements Route {
 
 
         if(red == null || white == null || white.isInGame() || red.isInGame()) {
-            response.redirect(WebServer.MESSAGE_URL);
+            Message errorMessage = new Message(Message.TYPE.error, "Player is already in a game!");
+            vm.put(MESSAGE, errorMessage);
+            httpSession.attribute(MESSAGE, errorMessage.getText());
+            response.redirect(WebServer.HOME_URL);
             halt();
             return null;
         }
 
-        BoardModel newGame = new BoardModel(white, red);
+        if (gameList.gameExists(red.getName())) {
+            gameList.removeBoard(red);
+        }
+        BoardModel newGame = new BoardModel(white, red, savedGames);
+
+        if (white instanceof AIPlayer) {
+            white = new AIPlayer(white.getName(), ((AIPlayer) white).getDifficulty());
+        }
+
         gameList.addGame(newGame);
         white.setInGame(true);
         red.setInGame(true);

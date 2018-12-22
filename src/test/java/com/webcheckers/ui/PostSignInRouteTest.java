@@ -83,19 +83,24 @@ public class PostSignInRouteTest {
 
     @Test
     void testInValidName(){
-        final TemplateEngineTester testHelper = new TemplateEngineTester();
-        when(engine.render(any(ModelAndView.class))).thenAnswer(testHelper.makeAnswer());
+        try{
+            final TemplateEngineTester testHelper = new TemplateEngineTester();
+            when(engine.render(any(ModelAndView.class))).thenAnswer(testHelper.makeAnswer());
 
-        when(request.queryParams("signIn")).thenReturn("red");
-        when(session.attribute(PostSignInRoute.SESSION_ATTR)).thenReturn("red");
+            when(request.queryParams("signIn")).thenReturn("red");
+            when(session.attribute(PostSignInRoute.SESSION_ATTR)).thenReturn("red");
 
-        when(playerLobby.addPlayer("red")).thenReturn(false);
-        CuT.handle(request, response);
-        testHelper.assertViewModelExists();
-        testHelper.assertViewModelIsaMap();
-        testHelper.assertViewModelAttribute("nameTaken", true);
-        testHelper.assertViewModelAttribute("title","Sign in!");
-        testHelper.assertViewName(GetSignInRoute.VIEW_NAME);
+            when(playerLobby.addPlayer("red")).thenReturn(false);
+            CuT.handle(request, response);
+            testHelper.assertViewModelExists();
+            testHelper.assertViewModelIsaMap();
+            testHelper.assertViewModelAttribute("nameTaken", true);
+            testHelper.assertViewModelAttribute("title","Sign in!");
+            testHelper.assertViewName(GetSignInRoute.VIEW_NAME);
+
+        } catch (HaltException err) {
+            // pass
+        }
     }
 
 }

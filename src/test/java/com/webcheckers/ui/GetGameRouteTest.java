@@ -2,6 +2,7 @@ package com.webcheckers.ui;
 
 import com.webcheckers.Appl.GameList;
 import com.webcheckers.Appl.PlayerLobby;
+import com.webcheckers.Appl.SavedGameList;
 import com.webcheckers.Model.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -23,6 +24,7 @@ class GetGameRouteTest {
     private TemplateEngine template;
     private PlayerLobby lobby;
     private GameList list;
+    private SavedGameList savedGames;
 
     private Request request;
     private Response response;
@@ -34,13 +36,15 @@ class GetGameRouteTest {
         template = mock(TemplateEngine.class);
         lobby = mock(PlayerLobby.class);
         list = mock(GameList.class);
+        savedGames = mock(SavedGameList.class);
 
         request = mock(Request.class);
         response = mock(Response.class);
         session = mock(Session.class);
 
         when(request.session()).thenReturn(session);
-        gameRouteTest = new GetGameRoute(list, lobby, template);
+        gameRouteTest = new GetGameRoute(list, lobby, savedGames, template);
+
     }
 
     @Test
@@ -110,7 +114,7 @@ class GetGameRouteTest {
             // pass
         }
 
-        verify(response).redirect(WebServer.MESSAGE_URL);
+        verify(response).redirect(WebServer.HOME_URL);
     }
 
     @Test
@@ -142,7 +146,7 @@ class GetGameRouteTest {
             // pass
         }
 
-        verify(response).redirect(WebServer.MESSAGE_URL);
+        verify(response).redirect(WebServer.HOME_URL);
     }
     @Test
     void nullPlayerTwoTest() {
@@ -173,7 +177,7 @@ class GetGameRouteTest {
             // pass
         }
 
-        verify(response).redirect(WebServer.MESSAGE_URL);
+        verify(response).redirect(WebServer.HOME_URL);
     }
     @Test
     void playerInGameTwoTest() {
@@ -204,7 +208,7 @@ class GetGameRouteTest {
             // pass
         }
 
-        verify(response).redirect(WebServer.MESSAGE_URL);
+        verify(response).redirect(WebServer.HOME_URL);
     }
 
     @Test
@@ -236,6 +240,6 @@ class GetGameRouteTest {
             // pass
         }
 
-        verify(response).redirect(WebServer.MESSAGE_URL);
+        verify(response).redirect(WebServer.HOME_URL);
     }
 }

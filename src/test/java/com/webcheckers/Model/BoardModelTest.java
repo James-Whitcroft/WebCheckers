@@ -1,5 +1,6 @@
 package com.webcheckers.Model;
 
+import com.webcheckers.Appl.SavedGameList;
 import org.junit.jupiter.api.*;
 
 import static org.mockito.Mockito.mock;
@@ -10,13 +11,15 @@ class BoardModelTest {
 
     private Player red;
     private Player white;
+    private SavedGameList savedGames;
     private BoardModel CuT;
 
     @BeforeEach
     void testSetup() {
         red = mock(Player.class);
         white = mock(Player.class);
-        CuT = new BoardModel(white, red);
+        savedGames = mock(SavedGameList.class);
+        CuT = new BoardModel(white, red, savedGames);
     }
 
     @Test

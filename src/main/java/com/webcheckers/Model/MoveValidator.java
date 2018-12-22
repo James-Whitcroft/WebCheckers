@@ -93,7 +93,7 @@ public class MoveValidator {
                 }
             }
             if (leftValid) {
-                Move forwardLeft = new Move(piecePos, new Position(forwardRow, leftCell));
+                Move forwardLeft = new Move( piecePos, new Position(forwardRow, leftCell));
                 if (validateSimpleJump(forwardLeft, model, piece)) {
                     return true;
                 }

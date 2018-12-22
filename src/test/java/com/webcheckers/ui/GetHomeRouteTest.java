@@ -1,6 +1,7 @@
 package com.webcheckers.ui;
 
 import com.webcheckers.Appl.PlayerLobby;
+import com.webcheckers.Appl.SavedGameList;
 import com.webcheckers.Model.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -23,6 +24,7 @@ class GetHomeRouteTest {
     private Session session;
     private Request request;
     private Response response;
+    private SavedGameList savedGameList;
 
     /**
      * Setup mock objects prior to each test
@@ -36,13 +38,14 @@ class GetHomeRouteTest {
         templateEngine = mock(TemplateEngine.class);
         playerLobby = mock(PlayerLobby.class);
         player = mock(Player.class);
+        savedGameList = mock(SavedGameList.class);
 
 
         when(session.attribute("id")).thenReturn("Bob");
         when(playerLobby.getPlayer(session.attribute("id"))).thenReturn(player);
 
         //create new GetHomeRoute for each test.
-        CuT = new GetHomeRoute(playerLobby, templateEngine);
+        CuT = new GetHomeRoute(playerLobby, templateEngine, savedGameList);
     }
 
     @Test

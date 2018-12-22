@@ -1,5 +1,6 @@
 package com.webcheckers.Appl;
 
+import com.webcheckers.Model.AIPlayer;
 import com.webcheckers.Model.Player;
 
 import java.util.ArrayList;
@@ -38,6 +39,20 @@ public class PlayerLobby {
         }
         return false;
     }
+
+    public synchronized boolean addAIPlayer(String name, int difficulty) {
+        if(name.length() < 1 || name.length() > 25 || name.equals(" ")) { return false; }
+        Pattern pattern = Pattern.compile("[^A-Za-z0-9 ]");
+        Matcher match = pattern.matcher(name);
+        if(match.find()) { return false; }
+        if(!lobby.containsKey(name.toLowerCase())) {
+            AIPlayer player = new AIPlayer(name, difficulty);
+            lobby.put(name.toLowerCase(), player);
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * Remove player from the lobby

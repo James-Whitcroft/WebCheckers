@@ -6,6 +6,7 @@ import com.webcheckers.ui.BoardView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,12 +18,14 @@ class GameListTest {
     private Player red;
     private Player white;
     private BoardModel model;
+    private SavedGameList savedGames;
 
     @BeforeEach
     public void testSetup() {
         red = new Player("red");
         white = new Player("white");
-        model = new BoardModel(white, red);
+        savedGames = Mockito.mock(SavedGameList.class);
+        model = new BoardModel(white, red, savedGames);
         Glt = new GameList();
     }
 

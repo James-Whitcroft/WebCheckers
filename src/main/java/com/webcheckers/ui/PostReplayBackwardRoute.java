@@ -1,0 +1,34 @@
+package com.webcheckers.ui;
+
+import com.google.gson.Gson;
+import com.webcheckers.Appl.MoveList;
+import com.webcheckers.Appl.SavedGameList;
+import com.webcheckers.Model.Message;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+import spark.Session;
+
+
+public class PostReplayBackwardRoute implements Route {
+
+    private final Gson gson;
+    private final SavedGameList savedGameList;
+
+    public PostReplayBackwardRoute(SavedGameList savedGameList, Gson gson) {
+        this.savedGameList = savedGameList;
+        this.gson = gson;
+    }
+
+    @Override
+    public Object handle(Request request, Response response) {
+        final Session httpSession = request.session();
+        Integer id = Integer.parseInt(httpSession.attribute("gameId").toString());
+        MoveList moveList = savedGameList.getSavedGameList(id);
+
+        if (moveList.backward()) {
+            return (gson.toJson(new Message(Message.TYPE.info, "true")));
+        }
+        return (gson.toJson(new Message(Message.TYPE.error, "You can't go back")));
+    }
+}

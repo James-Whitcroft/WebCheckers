@@ -1,5 +1,8 @@
 package com.webcheckers.Model;
 
+import com.webcheckers.Appl.MoveList;
+import com.webcheckers.Appl.SavedGameList;
+
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -11,6 +14,7 @@ public class BoardModel {
     //region Constants
 
     private static final int BOARD_SIZE = 8;
+    private final SavedGameList savedGames;
 
     //endregion
 
@@ -25,6 +29,7 @@ public class BoardModel {
     private Piece.color active;         /** The color of the active player*/
     private Player activePlayer;        /** The player whose turn it is*/
 
+    private MoveList moveList;          /** The ordered list of all moves made in a game **/
     private Deque<Move> pendingMoves;   /** The Deque of moves that have yet to be submitted*/
     private boolean isJumping = false;  /** Bool to track if the pending move is jumping */
     private boolean isMoving = false;   /** Bool to track if the pending move is moving */
@@ -33,14 +38,16 @@ public class BoardModel {
 
     //region Constructors
 
-    public BoardModel(Player whitePlayer, Player redPlayer) {
+    public BoardModel(Player whitePlayer, Player redPlayer, final SavedGameList savedGames) {
         this.whitePlayer = whitePlayer;
         this.redPlayer = redPlayer;
+        this.savedGames = savedGames;
         this.active = Piece.color.RED;
         this.activePlayer = redPlayer;
         pendingMoves = null;
         InitializeSpaces();
         PopulateBoard();
+
 //         populateLongJumpTestBoard();     // multi-jump test
 //         populateNoMoveBoard();           // no move test
 //         populateJumpTestBoard();         // king jump
@@ -286,11 +293,20 @@ public class BoardModel {
      * Finalizes pending moves
      */
     public void makeMoves() {
+        if (savedGames != null && moveList == null) {
+            moveList = new MoveList(redPlayer.getName(), whitePlayer.getName());
+        }
         if (pendingMoves != null) {
             for (Move move : pendingMoves) {
                 makeMove(move, false);
                 Piece piece = board[move.getEnd().getRow()][move.getEnd().getCell()].getPiece();
                 piece.checkIfKingMe(piece, move);
+                if (savedGames != null) {
+                    moveList.addMove(move);
+                }
+            }
+            if (savedGames != null) {
+                savedGames.addGameToSavedGames(moveList);
             }
             resetPendingMoves();
         }
@@ -371,6 +387,8 @@ public class BoardModel {
     public Deque<Move> getPendingMoves() {
         return pendingMoves;
     }
+
+
 
     //endregion
 }

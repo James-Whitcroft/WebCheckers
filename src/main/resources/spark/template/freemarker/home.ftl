@@ -23,7 +23,7 @@
   <div class="page">
   
     <h1>Web Checkers</h1>
-    
+
     <div class="navigation">
       <a href="/">my home</a>
       <#if signedIn><div class="fake_link">Welcome, ${playerName}</div>
@@ -69,7 +69,9 @@
                 </#if>
              </div>
              <div class="one_third_row">
-                <#if message??><div>${message}</div></#if>
+                 <#if message??>
+                    ${message}
+                 </#if>
              </div>
              <#if signedIn>
                 <div class="one_third_row">
@@ -83,6 +85,26 @@
                 </div>
              </#if>
          </div> <!--end row-->
+
+        <#if signedIn>
+         <div class="row">
+            <div class="one_third_row">
+                <#if replayGameList?size gt 0>
+                    <div class="small_title">
+                        Replay List
+                    </div>
+                   <#list 0..replayGameList?size - 1 as replay>
+                      <div>
+                         <form action="/replay/game" method="GET">
+                            <button class="lobby_entry" type="submit" name="gameId" value="${replay}">Replay: ${replay}</button>
+                         </form>
+                      </div>
+                   </#list>
+                </#if>
+            </div>
+         </div>
+         </#if>
+
     </div> <!--end body-->
   </div>
 </body>

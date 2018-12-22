@@ -82,9 +82,7 @@ Enhancements to the basic checkers game will provide a more interesting and comp
 the user. It has been decided as a group that two enhancements will be added, possibly more if time permits.
 
 *The first one is an AI player so that the user can play against a computer instead of another
-individual. The plan is to create different difficultly levels for the AI that the user may choose from.
-This AI will use a tree structure that will recursively search the best or simplest
-route of moves.
+individual. The AI is designed to execute random moves based on the spaces available.
 
 *The second enhancement is a replay option. This will store the moves executed throughout
 a game and then have an option at the end of a game for the players to watch the game over again with these
@@ -106,7 +104,8 @@ The tricky part that can be confusing to those who do not know coding
 terms is possibly where the UI connections are handled. The UI has players
 that can sign in and out and controls creating and terminating a Game. It
 is a handler for Players, who can be Human or AI, and directs their views
-based on their status.
+based on their status. The last portion is the Replay, which uses the Checkerboard
+in order to show a saved set of moves from a previous game.
 
 ## Architecture and Design
 
@@ -164,19 +163,22 @@ The Application Tier is similar to the controller of the structure. It is design
 act as the middle man between the Model Tier and the UI Tier. The classes currently stored within the Application Tier
 are as followed in the figure below.
 
-![The WebCheckers Application UML Class Diagram](application-classes.PNG)
+![The WebCheckers Application UML Class Diagram](appUML.PNG)
 
-At the current stage of our development, the two classes in our Application Tier are PlayerLobby and GameList.
-PlayerLobby is responsible for maintaining a list of all online (signed-in) users. This class is responsible for 
-retrieving the list of players, and is primarily used to display the list of other players for the user to click on.
-GameList maintains a list of all games being played. When a game ends (either by one player winning or one resigning),
-the game is removed from the GameList because it is no longer being played. When a user clicks on another online
-user, the two users enter a game (provided neither are currently in a game). When this happens, a game is created
-and added to the GameList object.
+There are six classes in our Application Tier are PlayerLobby, GameList, BuildReplayBoard, MoveList, SavedGameList, and
+AIAlgortithm. PlayerLobby is responsible for maintaining a list of all online (signed-in) users. This class is responsible
+for retrieving the list of players, and is primarily used to display the list of other players for the user to click on.
+GameList maintains a list of all games being played. When a game ends (either by one player winning or one resigning), the
+game is removed from the GameList because it is no longer being played. When a user clicks on another online user, the two
+users enter a game (provided neither are currently in a game). When this happens, a game is created and added to the GameList
+object. BuildReplayBoard, MoveList, and SavedGameList are three classes that work in tandem to execute the logic behind the
+Replay enhancement. SavedGameList was used to store multiple MoveList for recall at a later time. The BuildReplayBoard handles
+the actual construction of the Replay model adhering to the three tier hierarchy. Lastly, the AIAlgortithm implemented the
+logic housed behind the AI Player executing a move.
 
 ### Model Tier
-Our Model Tier currently consists of 9 classes that take over the task of handling the basic structure necessary
-for creating a game. These include Player, Space, Row, BoardModel, Piece, and a few others. An overall UML was created
+Our Model Tier consists of 10 classes that take over the task of handling the basic structure necessary for creating a game.
+These include Player, Space, Row, BoardModel, Piece, and a few others. An overall UML was created
 that interacted between the UI and the Model and is shown in the Model UML Class Diagram.
 
 ![The WebCheckers Model UML Class Diagram](modelUML.PNG)
@@ -184,7 +186,8 @@ that interacted between the UI and the Model and is shown in the Model UML Class
 The model creates the actual board and player data while the UI and Application create the UI representation of it. The
 board is created of 8 rows and 64 spaces. These spaces have pieces placed on them in their respective spots. The orientation
 is handled in the UI and will be moved more to the Application Tier when we restructure to promote a more Controller-Model
-structure.
+structure. Another class that is considered a break of the Controller-Model structure is the MoveValidator since it handles
+logic between the player and the board; however, currently it is stored in Model tier.
 
 ### Design Improvements
 The problems in the code base are the failure to follow the model, application, and UI tier
@@ -215,10 +218,8 @@ and for the application and UI tier, we aimed to hit at least 80%, but in most w
 than that. These percentages were chosen because the logic in the model tier was the most 
 complicated, and it was vital to the operation of the game that these functioned properly. 
 There were a few branches missed, however most of the code was run in the tests. We were
-able to achieve 94% coverage for the model tier, 95% coverage for the application tier, and
-49% coverage for the UI tier. The UI tier coverage is low because we were unable to complete
-tests for all the classes, however the classes that were tested were all above 75% and most
-were above 90%. The jacoco test ran on the unit tests written and produced the results shown
+able to achieve 89% coverage for the model tier, 95% coverage for the application tier, and
+81% coverage for the UI tier. The jacoco test ran on the unit tests written and produced the results shown
 in the figures below.
 
 ![The WebCheckers UI Tier Code Coverage](uiUnit.PNG)

@@ -1,5 +1,7 @@
 package com.webcheckers.Model;
 
+import java.awt.*;
+
 /**
  * Stores information for a move
  */

@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 
 import com.webcheckers.Appl.GameList;
 import com.webcheckers.Appl.PlayerLobby;
+import com.webcheckers.Appl.SavedGameList;
+import com.webcheckers.Model.AIPlayer;
 import spark.TemplateEngine;
 
 
@@ -67,6 +69,10 @@ public class WebServer {
   static final String SUBMIT_URL = "/submitTurn";
   static final String RESIGN_URL = "/resignGame";
   static final String BACKUP_URL = "/backupMove";
+  static final String REPLAY_GAME = "/replay/game";
+  static final String REPLAY_STOP = "/replay/stopWatching";
+  static final String REPLAY_NEXT = "/replay/nextTurn";
+  static final String REPLAY_PREVIOUS = "/replay/previousTurn";
 
   //
   // Attributes
@@ -76,6 +82,7 @@ public class WebServer {
   private final TemplateEngine templateEngine;
   private final Gson gson;
   private final GameList gameList;
+  private final SavedGameList savedGames;
 
   //
   // Constructor
@@ -94,7 +101,7 @@ public class WebServer {
    * @throws NullPointerException
    *    If any of the parameters are {@code null}.
    */
-  public WebServer(final GameList gameList, final PlayerLobby playerLobby, final TemplateEngine templateEngine, final Gson gson) {
+  public WebServer(final GameList gameList, final PlayerLobby playerLobby, final TemplateEngine templateEngine, final SavedGameList savedGames, final Gson gson) {
     // validation
     Objects.requireNonNull(playerLobby, "playerLobby must not be null");
     Objects.requireNonNull(templateEngine, "templateEngine must not be null");
@@ -104,6 +111,7 @@ public class WebServer {
     this.playerLobby = playerLobby;
     this.templateEngine = templateEngine;
     this.gson = gson;
+    this.savedGames = savedGames;
   }
 
   //
@@ -158,7 +166,7 @@ public class WebServer {
     //// code clean; using small classes.
 
     // Shows the Checkers game Home page.
-    get(HOME_URL, new GetHomeRoute(playerLobby, templateEngine));
+    get(HOME_URL, new GetHomeRoute(playerLobby, templateEngine, savedGames));
 
     // Shows the Checkers sign in page
     get(SIGNIN_URL, new GetSignInRoute(templateEngine));
@@ -170,13 +178,16 @@ public class WebServer {
     get(SIGNOUT_URL, new GetSignOutRoute(playerLobby, templateEngine));
 
     // GET game route
-    get(GAME_URL, new GetGameRoute(gameList, playerLobby, templateEngine));
-
-    // GET message route
-    get(MESSAGE_URL, new GetErrorMessageRoute(templateEngine));
+    get(GAME_URL, new GetGameRoute(gameList, playerLobby, savedGames, templateEngine));
 
     // GET board route
     get(BOARD_URL, new GetBoardRoute(gameList, playerLobby, templateEngine, gson));
+
+    //GET Replay game route
+    get(REPLAY_GAME, new GetReplayGameRoute(savedGames, gson, templateEngine));
+
+    //GET Replay stop route
+    get(REPLAY_STOP, new GetReplayStopRoute(savedGames, templateEngine));
 
     // Post validate move route
     post(VALIDATE_URL, new PostValidateMoveRoute(playerLobby, gameList, gson));
@@ -185,15 +196,25 @@ public class WebServer {
     post(CHECK_URL, new PostCheckTurnRoute(gameList, playerLobby, gson));
 
     // POST submit turn
-    post(SUBMIT_URL, new PostSubmitTurnRoute(gameList, gson));
+    post(SUBMIT_URL, new PostSubmitTurnRoute(gameList, playerLobby, gson));
 
     // POST resign route
-    post(RESIGN_URL, new PostResignGameRoute(gameList, gson));
+    post(RESIGN_URL, new PostResignGameRoute(gameList, savedGames, gson));
 
     // POST back up turn route; backs up last non-submitted move
     post(BACKUP_URL, new PostBackUpMoveRoute(gameList, playerLobby, gson));
 
+    //POST next turn replay
+    post(REPLAY_NEXT, new PostReplayForwardRoute(savedGames, gson));
+
+    //POST previous turn replay
+    post(REPLAY_PREVIOUS, new PostReplayBackwardRoute(savedGames, gson));
+
+    initializeAIPlayers();
     LOG.config("WebServer is initialized.");
   }
 
+  private void initializeAIPlayers() {
+    playerLobby.addAIPlayer("AI Player", -1);
+  }
 }

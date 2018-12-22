@@ -20,7 +20,7 @@ public class Message {
         error
     }
 
-    /**
+     /**
      * Create Message with type specified
      * @param messageType the type of message, ERROR or INFO
      */
@@ -33,6 +33,10 @@ public class Message {
             this.text = "This player is available for a game, enjoy your game!";
         }
     }
+    /**
+     * Create Message with type specified
+     * @param messageType the type of message, ERROR or INFO
+     */
     public Message (TYPE messageType, String text){
         this.type = messageType;
         this.text = text;

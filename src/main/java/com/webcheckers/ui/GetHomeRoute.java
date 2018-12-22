@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.webcheckers.Appl.PlayerLobby;
+import com.webcheckers.Appl.SavedGameList;
+import com.webcheckers.Model.Message;
 import com.webcheckers.Model.Player;
 import spark.*;
 
@@ -22,6 +24,9 @@ public class GetHomeRoute implements Route {
   static final String PLAYER_NAME = "playerName";
   static final String ACTIVE_PLAYERS = "activePlayers";
   static final String ACTIVE_PLAYER_COUNT = "activePlayerCount";
+  static final String MESSAGE = "message";
+  static final String REPLAY_GAME_LIST = "replayGameList";
+
 
   // player stats
   static final String GAMES_PLAYED_COUNT = "gamesPlayedCount";
@@ -31,6 +36,7 @@ public class GetHomeRoute implements Route {
 
   private final PlayerLobby playerLobby;
   private final TemplateEngine templateEngine;
+  private final SavedGameList savedGameList;
 
 
   /**
@@ -42,13 +48,14 @@ public class GetHomeRoute implements Route {
    * @param templateEngine
    *   the HTML template rendering engine
    */
-  public GetHomeRoute(PlayerLobby playerLobby, final TemplateEngine templateEngine) {
+  public GetHomeRoute(PlayerLobby playerLobby, final TemplateEngine templateEngine, SavedGameList savedGameList) {
     // validation
     Objects.requireNonNull(playerLobby, "playerLobby must not be null");
     Objects.requireNonNull(templateEngine, "templateEngine must not be null");
     //
     this.playerLobby = playerLobby;
     this.templateEngine = templateEngine;
+    this.savedGameList = savedGameList;
     //
     LOG.config("GetHomeRoute is initialized.");
   }
@@ -83,7 +90,13 @@ public class GetHomeRoute implements Route {
       vm.put(ACTIVE_PLAYERS, playerLobby.getOtherActivePlayers(newPlayer));
       vm.put(GAMES_PLAYED_COUNT, newPlayer.getGamesPlayed());
       vm.put(GAMES_WON_COUNT, newPlayer.getGamesWon());
+      vm.put(REPLAY_GAME_LIST, savedGameList.getAllSavedGames());
 
+
+      if(httpSession.attributes().contains(MESSAGE)){
+        vm.put(MESSAGE, httpSession.attribute(MESSAGE));
+        httpSession.removeAttribute(MESSAGE);
+      }
       if (playerLobby.getPlayer(playerName).isInGame()) {
         response.redirect(WebServer.BOARD_URL);
         halt();
@@ -94,6 +107,7 @@ public class GetHomeRoute implements Route {
     }
     // display the total number of players to an un-signed in player
     vm.put(ACTIVE_PLAYER_COUNT, playerLobby.getActivePlayers().size());
+    vm.put(REPLAY_GAME_LIST, savedGameList.getAllSavedGames());
     return templateEngine.render(new ModelAndView(vm , GetHomeRoute.VIEW_NAME));
   }
 
